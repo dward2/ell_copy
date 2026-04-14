@@ -1,0 +1,11 @@
+pytest
+pytest-pycodestyle
+dnspython
+pymongo
+pytest-mongodb
+scikit-image
+matplotlib
+numpy
+pillow
+flask
+requests
