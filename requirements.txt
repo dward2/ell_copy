@@ -1,5 +1,5 @@
 pytest
-pytest-codestyle
+pytest-pycodestyle
 dnspython
 pymongo
 pytest-mongodb
