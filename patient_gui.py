@@ -42,4 +42,9 @@ cpap_entry.grid(column=4, row=3, sticky=tk.E, padx=5)
 cpap_label = tk.Label(root, text="CPAP Pressure (cmH2O)", font=base_font)
 cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
 
+button_file = tk.Button(root, text="Select CPAP File",
+                        font=base_font, state=tk.DISABLED)
+button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
+
+
 root.mainloop()
