@@ -35,4 +35,11 @@ rn_entry.grid(column=3, row=3, sticky=tk.E, padx=5)
 rn_label = tk.Label(root, text="Room Number", font=base_font)
 rn_label.grid(column=3, row=1, sticky=tk.W, padx=5)
 
+cpap_value = tk.StringVar()
+cpap_entry = tk.Entry(root, font=base_font,
+                      textvariable=rn_value, width=20)
+cpap_entry.grid(column=4, row=3, sticky=tk.E, padx=5)
+cpap_label = tk.Label(root, text="CPAP Pressure (cmH2O)", font=base_font)
+cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
+
 root.mainloop()
