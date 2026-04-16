@@ -32,6 +32,18 @@ def monitering_gui():
     time_select = tk.OptionMenu(root, chosen_time, *times)
     time_select.grid(row=1, column=1, sticky='w')
     
+    apnea_label = tk.Label(root, text="Apnea: ")
+    apnea_label.grid(row=1, column=2, sticky='e')
+
+    a_data = tk.IntVar(value='1')
+    apnea_color = tk.StringVar()
+    if a_data.get() > 2:
+        apnea_color.set("red")
+    else:
+        apnea_color.set("black")
+    apnea_data = tk.Label(root, textvariable=a_data, fg=apnea_color.get())
+    apnea_data.grid(column=3, row=1, sticky='w')
+    
     root.mainloop()
 
 if __name__ == "__main__":
