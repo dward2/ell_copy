@@ -95,6 +95,11 @@ def monitering_gui():
     image2_label = tk.Label(root, textvariable=image2_time)
     image2_label.grid(row=4, column=3, columnspan=2)
 
+    save_image1 = tk.Button(root, text='Save Image')
+    save_image1 .grid(row=5, column=0, columnspan=2)
+    save_image2 = tk.Button(root, text='Save Image')
+    save_image2.grid(row=5, column=3, columnspan=2)
+
     root.mainloop()
 
 if __name__ == "__main__":
