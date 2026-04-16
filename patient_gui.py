@@ -20,4 +20,12 @@ name_label = tk.Label(root, text="Patient Name",
                       font=base_font)
 name_label.grid(column=0, row=1, sticky=tk.W, padx=5)
 
+mrn_value = tk.StringVar()
+mrn_entry = tk.Entry(root, font=base_font,
+                     textvariable=mrn_value, width=18)
+mrn_entry.grid(column=2, row=3, sticky=tk.E, padx=5)
+mrn_label = tk.Label(root, text="Medical Record Number",
+                     font=base_font)
+mrn_label.grid(column=2, row=1, sticky=tk.W, padx=5)
+
 root.mainloop()
