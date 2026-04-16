@@ -84,6 +84,16 @@ def monitering_gui():
     cpap_image2 = tk.Label(root, image=img_tk2)
     cpap_image2.grid(row=3, column=3, columnspan=2)
 
+    image1_time = tk.StringVar()
+    image1_time.set(chosen_time.get())
+    image1_label = tk.Label(root, textvariable=image1_time)
+    image1_label.grid(row=4, column=0, columnspan=2)
+    
+    recent_time = "Now"
+    image2_time = tk.StringVar()
+    image2_time.set(recent_time)
+    image2_label = tk.Label(root, textvariable=image2_time)
+    image2_label.grid(row=4, column=3, columnspan=2)
 
     root.mainloop()
 
