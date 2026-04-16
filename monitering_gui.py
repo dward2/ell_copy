@@ -2,19 +2,20 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
+
 def monitering_gui():
 
     def append_new_pressure():
-        #append data to patient
+        # append data to patient
         print(new_pressure.get())
 
     initial_root = tk.Tk()
     initial_root.geometry('470x470')
-    #initial_root.resizable(width=False, height=False)
+    # initial_root.resizable(width=False, height=False)
     initial_root.title("Moniter Patient")
     root = tk.Frame(initial_root)
     root.pack(padx=10, pady=10)
-    
+
     room_label = tk.Label(root, text="Select Room Number: ")
     room_label.grid(row=0, column=0, sticky='w')
 
@@ -28,9 +29,10 @@ def monitering_gui():
     patient_label.grid(row=0, column=2, sticky='nw')
 
     p_data = tk.StringVar(value='Ella Fortenbery\nid: 123\nLatest Pressure: 4')
-    patient_data = tk.Label(root, textvariable=p_data, wraplength=200, justify='left')
+    patient_data = tk.Label(root, textvariable=p_data,
+                            wraplength=200, justify='left')
     patient_data.grid(column=3, row=0, rowspan=2, sticky='nw')
-    
+
     time_label = tk.Label(root, text='Select Time:')
     time_label.grid(row=2, column=0, sticky='w')
 
@@ -40,7 +42,7 @@ def monitering_gui():
     time_select = tk.OptionMenu(root, chosen_time, *times)
     time_select.config(width=10)
     time_select.grid(row=3, column=0, sticky='w')
-    
+
     apnea_label = tk.Label(root, text="Apnea: ")
     apnea_label.grid(row=3, column=2, sticky='w')
 
@@ -59,7 +61,7 @@ def monitering_gui():
     def validate_int(P):
         return P.isdigit() or P == ""
     vcmd = (root.register(validate_int), "%P")
-    
+
     new_pressure = tk.StringVar()
     pressure_entry = tk.Entry(
         root,
@@ -71,19 +73,20 @@ def monitering_gui():
     pressure_entry.grid(row=4, column=1, sticky='w')
 
     root.rowconfigure(5, pad=10)
-    pressure_button = tk.Button(root, text='Submit', command=append_new_pressure)
+    pressure_button = tk.Button(root, text='Submit',
+                                command=append_new_pressure)
     pressure_button.grid(row=5, column=1, sticky='n')
 
-    #display cpap images:
+    # display cpap images:
     img_open1 = Image.open("cpap1.png")
-    img_resized1 = img_open1.resize((200,200))  
+    img_resized1 = img_open1.resize((200, 200))
     img_tk1 = ImageTk.PhotoImage(img_resized1)
     cpap_image1 = tk.Label(root, image=img_tk1)
-    cpap_image1.image = img_tk1  
+    cpap_image1.image = img_tk1
     cpap_image1.grid(row=6, column=0, columnspan=2, sticky='s')
-    
+
     img_open2 = Image.open("cpap2.png")
-    img_resized2 = img_open2.resize((200,200))
+    img_resized2 = img_open2.resize((200, 200))
     img_tk2 = ImageTk.PhotoImage(img_resized2)
     cpap_image2 = tk.Label(root, image=img_tk2)
     cpap_image2.grid(row=6, column=2, columnspan=2, sticky='s')
@@ -92,7 +95,7 @@ def monitering_gui():
     image1_time.set(chosen_time.get())
     image1_label = tk.Label(root, textvariable=image1_time)
     image1_label.grid(row=7, column=0, columnspan=2)
-    
+
     recent_time = "Now"
     image2_time = tk.StringVar()
     image2_time.set(recent_time)
@@ -105,6 +108,7 @@ def monitering_gui():
     save_image2.grid(row=8, column=2, columnspan=2)
 
     root.mainloop()
+
 
 if __name__ == "__main__":
     monitering_gui()
