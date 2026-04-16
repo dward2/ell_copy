@@ -39,6 +39,27 @@ def validate_mrn(mrn):
     return True
 
 
+def validate_rn(rn):
+    rn = rn.strip()
+    if len(rn) == 0:
+        return "Please enter Room Number"
+    if not rn.isdigit():
+        return "Room Number Invalid"
+    return True
+
+
+def validate_pressure(pres):
+    pres = pres.strip()
+    if len(pres) == 0:
+        return True
+    if not pres.isdigit():
+        return "CPAP pressure must be an integer"
+    pres_int = int(pres)
+    if pres_int < 4 or pres_int > 25:
+        return "CPAP pressure must be between 4 and 25"
+    return True
+
+
 def main_window():
     def name_enter():
         result = validate_name(name_value.get())
@@ -49,6 +70,20 @@ def main_window():
 
     def mrn_enter():
         result = validate_mrn(mrn_value.get())
+        if result is not True:
+            status_value.set(result)
+            return False
+        return True
+
+    def rn_enter():
+        result = validate_rn(rn_value.get())
+        if result is not True:
+            status_value.set(result)
+            return False
+        return True
+
+    def pressure_enter():
+        result = validate_pressure(cpap_value.get())
         if result is not True:
             status_value.set(result)
             return False
