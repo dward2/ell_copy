@@ -19,7 +19,7 @@ def validate_name(name):
     Args:
         name (str): The patient name to validate.
     Returns:
-        True if the name is valid, or an error message string
+        True if the name is valid, or False
         if the name is invalid.
     '''
     name = name.strip()
@@ -43,7 +43,7 @@ def validate_mrn(mrn):
     Args:
         mrn (str): The medical record number to validate.
     Returns:
-        True if the MRN is valid, or an error message string
+        True if the MRN is valid, or False
         if the MRN is empty or contains non-digit characters.
     '''
     mrn = mrn.strip()
@@ -59,8 +59,8 @@ def validate_rn(rn):
     Args:
         rn (str): The room number to validate.
     Returns:
-        True if the room number is valid, or an error message
-        string if the room number is empty or contains
+        True if the room number is valid, or False
+        if the room number is empty or contains
         non-digit characters.
     '''
     rn = rn.strip()
@@ -77,8 +77,8 @@ def validate_pressure(pres):
     Args:
         pres (str): The CPAP pressure value to validate.
     Returns:
-        True if the pressure is valid or empty, or an error
-        message string if the value is not an integer or is
+        True if the pressure is valid or empty, or False
+        if the value is not an integer or is
         outside the range of 4 to 25
     '''
     pres = pres.strip()
@@ -102,7 +102,6 @@ def main_window():
         '''
         result = validate_name(name_value.get())
         if result is not True:
-            status_value.set(result)
             return False
         return True
 
@@ -114,7 +113,6 @@ def main_window():
         '''
         result = validate_mrn(mrn_value.get())
         if result is not True:
-            status_value.set(result)
             return False
         return True
 
@@ -126,7 +124,6 @@ def main_window():
         '''
         result = validate_rn(rn_value.get())
         if result is not True:
-            status_value.set(result)
             return False
         return True
 
@@ -138,7 +135,6 @@ def main_window():
         '''
         result = validate_pressure(cpap_value.get())
         if result is not True:
-            status_value.set(result)
             return False
         return True
 
