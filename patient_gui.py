@@ -28,4 +28,11 @@ mrn_label = tk.Label(root, text="Medical Record Number",
                      font=base_font)
 mrn_label.grid(column=2, row=1, sticky=tk.W, padx=5)
 
+rn_value = tk.StringVar()
+rn_entry = tk.Entry(root, font=base_font,
+                    textvariable=rn_value, width=11)
+rn_entry.grid(column=3, row=3, sticky=tk.E, padx=5)
+rn_label = tk.Label(root, text="Room Number", font=base_font)
+rn_label.grid(column=3, row=1, sticky=tk.W, padx=5)
+
 root.mainloop()
