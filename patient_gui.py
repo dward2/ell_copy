@@ -46,5 +46,8 @@ button_file = tk.Button(root, text="Select CPAP File",
                         font=base_font, state=tk.DISABLED)
 button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
 
+button_reset = tk.Button(root, text="Reset",
+                         font=base_font, state=tk.DISABLED)
+button_reset.grid(column=3, row=9, sticky=tk.W, padx=10)
 
 root.mainloop()
