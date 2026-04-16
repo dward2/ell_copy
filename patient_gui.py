@@ -8,6 +8,34 @@ base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
 small_font = ("Georgia", 16)
 
+
+def validate_name(name):
+    name = name.strip()
+    if len(name) == 0:
+        return "Please enter a patient name."
+    else:
+        for c in name:
+            if c.isalpha():
+                continue
+            elif c == " ":
+                continue
+            elif c == "-":
+                continue
+            else:
+                return "Name invalid"
+        return True
+
+
+def main_window():
+    def name_enter():
+        result = validate_name(name_value.get())
+        if result is not True:
+            status_value.set(result)
+            return False
+        status_value.set("Name accepted.")
+        return True
+
+
 root = tk.Tk()
 root.title("Sleep Lab Monitoring System")
 root.resizable(False, False)
@@ -61,4 +89,7 @@ status_value = tk.StringVar(value="Enter Patient Information Above")
 status_label = tk.Label(frame, textvariable=status_value, font=base_font)
 status_label.grid(column=0, row=7, columnspan=5, padx=15)
 
-root.mainloop()
+# root.mainloop()
+
+if __name__ == "__main__":
+    main_window()

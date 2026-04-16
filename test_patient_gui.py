@@ -3,14 +3,14 @@ import patient_gui
 from patient_gui import validate_name
 
 
-@pytest.mark.parametrize("name", "expected", [
+@pytest.mark.parametrize("name , expected", [
     ("Nika Ilieva", True),
     ("Ella Fortenbery", True),
     (" Nika Ilieva ", True),
     ("", "Please enter a patient name."),
-    ("  ","Please enter a patient name."),
-    ("John123", "Invalid Name"),
-    ("John@Carter", "Invalid Name"),
+    ("  ", "Please enter a patient name."),
+    ("John123", "Name invalid"),
+    ("John@Carter", "Name invalid"),
 ])
 def test_validate_name(name, expected):
-    assert name_enter == expected
+    assert validate_name(name) == expected
