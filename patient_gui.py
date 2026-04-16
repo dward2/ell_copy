@@ -14,6 +14,14 @@ root.resizable(False, False)
 
 
 def validate_name(name):
+    '''Validates that a patient name contains letters, spaces,
+    or hyphens only.
+    Args:
+        name (str): The patient name to validate.
+    Returns:
+        True if the name is valid, or an error message string
+        if the name is invalid.
+    '''
     name = name.strip()
     if len(name) == 0:
         return "Please enter a patient name."
@@ -31,6 +39,13 @@ def validate_name(name):
 
 
 def validate_mrn(mrn):
+    '''Validates that a medical record number contains only digits.
+    Args:
+        mrn (str): The medical record number to validate.
+    Returns:
+        True if the MRN is valid, or an error message string
+        if the MRN is empty or contains non-digit characters.
+    '''
     mrn = mrn.strip()
     if len(mrn) == 0:
         return "Please enter Medical Record Number"
@@ -40,6 +55,14 @@ def validate_mrn(mrn):
 
 
 def validate_rn(rn):
+    '''Validates that a room number contains only digits.
+    Args:
+        rn (str): The room number to validate.
+    Returns:
+        True if the room number is valid, or an error message
+        string if the room number is empty or contains
+        non-digit characters.
+    '''
     rn = rn.strip()
     if len(rn) == 0:
         return "Please enter Room Number"
@@ -49,6 +72,15 @@ def validate_rn(rn):
 
 
 def validate_pressure(pres):
+    '''Validates that a CPAP pressure is an integer between 4 and 25.
+    An empty entry is considered valid since CPAP pressure is optional.
+    Args:
+        pres (str): The CPAP pressure value to validate.
+    Returns:
+        True if the pressure is valid or empty, or an error
+        message string if the value is not an integer or is
+        outside the range of 4 to 25
+    '''
     pres = pres.strip()
     if len(pres) == 0:
         return True
@@ -63,6 +95,11 @@ def validate_pressure(pres):
 def main_window():
 
     def name_enter():
+        '''Validates the patient name entry and update the status
+        bar with an error message if validation fails.
+        Returns:
+            bool: True if the name is valid, False otherwise
+        '''
         result = validate_name(name_value.get())
         if result is not True:
             status_value.set(result)
@@ -70,6 +107,11 @@ def main_window():
         return True
 
     def mrn_enter():
+        '''Validates the MRN entry and updates the status bar
+        with an error message if validation fails.
+        Returns:
+            bool: True if the MRN is valid, False otherwise.
+        '''
         result = validate_mrn(mrn_value.get())
         if result is not True:
             status_value.set(result)
@@ -77,6 +119,11 @@ def main_window():
         return True
 
     def rn_enter():
+        '''Validates the room number entry and updates the status
+        bar with an error message if validation fails.
+        Returns:
+            bool: True if the room number is valid, False otherwise.
+        '''
         result = validate_rn(rn_value.get())
         if result is not True:
             status_value.set(result)
@@ -84,6 +131,11 @@ def main_window():
         return True
 
     def pressure_enter():
+        '''Validates the CPAP pressure entry and updates the status
+        bar with an error message if validation fails.
+        Returns:
+            bool: True if the pressure is valid, False otherwise.
+        '''
         result = validate_pressure(cpap_value.get())
         if result is not True:
             status_value.set(result)
