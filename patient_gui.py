@@ -50,4 +50,8 @@ button_reset = tk.Button(root, text="Reset",
                          font=base_font, state=tk.DISABLED)
 button_reset.grid(column=3, row=9, sticky=tk.W, padx=10)
 
+button_up = tk.Button(root, text="Upload",
+                      font=base_font, state=tk.DISABLED)
+button_up.grid(column=2, row=9, sticky=tk.W, padx=10)
+
 root.mainloop()
