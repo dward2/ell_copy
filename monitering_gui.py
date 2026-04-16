@@ -17,7 +17,12 @@ def monitering_gui():
     room_select = tk.OptionMenu(root, chosen_room, *rooms)
     room_select.grid(row=0, column=1, sticky='w')
 
-    
+    patient_label = tk.Label(root, text="Patient: ")
+    patient_label.grid(row=0, column=2, sticky='e')
+
+    p_data = tk.StringVar(value='Ella Fortenbery, id: 123')
+    patient_data = tk.Label(root, textvariable=p_data)
+    patient_data.grid(column=3, row=0, sticky='w')
     
     
     root.mainloop()
