@@ -8,6 +8,10 @@ base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
 small_font = ("Georgia", 16)
 
+root = tk.Tk()
+root.title("Sleep Lab Monitoring System")
+root.resizable(False, False)
+
 
 def validate_name(name):
     name = name.strip()
@@ -26,19 +30,30 @@ def validate_name(name):
         return True
 
 
+def validate_mrn(mrn):
+    mrn = mrn.strip()
+    if len(mrn) == 0:
+        return "Please enter Medical Record Number"
+    if not mrn.isdigit():
+        return "MRN Invalid"
+    return True
+
+
 def main_window():
     def name_enter():
         result = validate_name(name_value.get())
         if result is not True:
             status_value.set(result)
             return False
-        status_value.set("Name accepted.")
         return True
 
+    def mrn_enter():
+        result = validate_mrn(mrn_value.get())
+        if result is not True:
+            status_value.set(result)
+            return False
+        return True
 
-root = tk.Tk()
-root.title("Sleep Lab Monitoring System")
-root.resizable(False, False)
 
 name_value = tk.StringVar()
 name_entry = tk.Entry(root, font=base_font,
