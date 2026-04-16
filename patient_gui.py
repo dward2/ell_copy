@@ -54,4 +54,11 @@ button_up = tk.Button(root, text="Upload",
                       font=base_font, state=tk.DISABLED)
 button_up.grid(column=2, row=9, sticky=tk.W, padx=10)
 
+frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
+frame.grid(column=0, row=6, columnspan=5, pady=10)
+
+status_value = tk.StringVar(value="Enter Patient Information Above")
+status_label = tk.Label(frame, textvariable=status_value, font=base_font)
+status_label.grid(column=0, row=7, columnspan=5, padx=15)
+
 root.mainloop()
