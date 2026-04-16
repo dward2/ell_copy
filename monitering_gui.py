@@ -2,6 +2,11 @@ import tkinter as tk
 from tkinter import ttk
 
 def monitering_gui():
+
+    def append_new_pressure():
+        #append data to patient
+        print(new_pressure.get())
+        
     initial_root = tk.Tk()
     initial_root.geometry('500x350')
     #initial_root.resizable(width=False, height=False)
@@ -43,7 +48,27 @@ def monitering_gui():
         apnea_color.set("black")
     apnea_data = tk.Label(root, textvariable=a_data, fg=apnea_color.get())
     apnea_data.grid(column=3, row=1, sticky='w')
+
+    pressure_label = tk.Label(root, text='New Pressure Reading: ')
+    pressure_label.grid(row=2, column=0, sticky='e')
+
+    def validate_int(P):
+        return P.isdigit() or P == ""
+    vcmd = (root.register(validate_int), "%P")
     
+    new_pressure = tk.StringVar()
+    pressure_entry = tk.Entry(
+        root,
+        textvariable=new_pressure,
+        validate="key",
+        validatecommand=vcmd,
+        width=4
+    )
+    pressure_entry.grid(row=2, column=1, sticky='w')
+
+    pressure_button = tk.Button(root, text='Submit', command=append_new_pressure)
+    pressure_button.grid(row=2, column=2, sticky='w')
+
     root.mainloop()
 
 if __name__ == "__main__":
