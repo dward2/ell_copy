@@ -24,6 +24,13 @@ def monitering_gui():
     patient_data = tk.Label(root, textvariable=p_data)
     patient_data.grid(column=3, row=0, sticky='w')
     
+    time_label = tk.Label(root, text='Select Time:')
+    time_label.grid(row=1, column=0, sticky='e')
+
+    chosen_time = tk.StringVar(value="-")
+    times = ['00:30', '08:17', '14:45']
+    time_select = tk.OptionMenu(root, chosen_time, *times)
+    time_select.grid(row=1, column=1, sticky='w')
     
     root.mainloop()
 
