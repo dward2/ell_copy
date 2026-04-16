@@ -1,12 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
+from PIL import Image, ImageTk
 
 def monitering_gui():
 
     def append_new_pressure():
         #append data to patient
         print(new_pressure.get())
-        
+
     initial_root = tk.Tk()
     initial_root.geometry('500x350')
     #initial_root.resizable(width=False, height=False)
@@ -68,6 +69,21 @@ def monitering_gui():
 
     pressure_button = tk.Button(root, text='Submit', command=append_new_pressure)
     pressure_button.grid(row=2, column=2, sticky='w')
+
+    #display cpap images:
+    img_open1 = Image.open("cpap1.png")
+    img_resized1 = img_open1.resize((200,200))  
+    img_tk1 = ImageTk.PhotoImage(img_resized1)
+    cpap_image1 = tk.Label(root, image=img_tk1)
+    cpap_image1.image = img_tk1  
+    cpap_image1.grid(row=3, column=0, columnspan=2)
+    
+    img_open2 = Image.open("cpap2.png")
+    img_resized2 = img_open2.resize((200,200))
+    img_tk2 = ImageTk.PhotoImage(img_resized2)
+    cpap_image2 = tk.Label(root, image=img_tk2)
+    cpap_image2.grid(row=3, column=3, columnspan=2)
+
 
     root.mainloop()
 
