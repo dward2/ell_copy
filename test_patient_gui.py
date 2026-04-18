@@ -33,6 +33,21 @@ def test_validate_mrn(mrn, expected):
     assert validate_mrn(mrn) == expected
 
 
+@pytest.mark.parametrize("rn, expected", [
+    ("101", True),
+    ("1", True),
+    ("", "Please enter Room Number"),
+    ("   ", "Please enter Room Number"),
+    ("abc", "Room Number Invalid"),
+    ("13a", "Room Number Invalid"),
+    ("17.5", "Room Number Invalid"),
+    ("!", "Room Number Invalid"),
+    ("@", "Room Number Invalid"),
+])
+def test_validate_rn(rn, expected):
+    assert validate_rn(rn) == expected
+
+
 @pytest.mark.parametrize("pres, expected", [
     ("4", True),
     ("15", True),
