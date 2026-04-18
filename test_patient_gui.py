@@ -4,6 +4,7 @@ from patient_gui import validate_name
 from patient_gui import validate_mrn
 from patient_gui import validate_rn
 from patient_gui import validate_pressure
+from patient_gui import only_digits
 
 
 @pytest.mark.parametrize("name , expected", [
@@ -47,3 +48,21 @@ def test_validate_mrn(mrn, expected):
 ])
 def test_validate_pressure(pres, expected):
     assert validate_pressure(pres) == expected
+
+
+@pytest.mark.parametrize("value, expected", [
+    ("", True),
+    ("123", True),
+    ("0", True),
+    ("11111", True),
+    ("abc", False),
+    ("12a", False),
+    ("1.5", False),
+    ("12 34", False),
+    ("-1", False),
+    ("!", False),
+    ("@", False),
+    (".", False)
+])
+def test_only_digits(value, expected):
+    assert only_digits(value) == expected
