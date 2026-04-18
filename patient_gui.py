@@ -8,10 +8,6 @@ base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
 small_font = ("Georgia", 16)
 
-root = tk.Tk()
-root.title("Sleep Lab Monitoring System")
-root.resizable(False, False)
-
 
 def validate_name(name):
     '''Validates that a patient name contains letters, spaces,
@@ -92,6 +88,19 @@ def validate_pressure(pres):
     return True
 
 
+def only_digits(value):
+    """Validates that the entry contains only digits.
+    Allows empty string for when the user deletes all text.
+    Args:
+        value (str): The proposed value of the entry field.
+    Returns:
+        bool: True if value is empty or all digits, False otherwise.
+    """
+    if value == "":
+        return True
+    return value.isdigit()
+
+
 def main_window():
 
     def name_enter():
@@ -150,8 +159,11 @@ def main_window():
     name_label.grid(column=0, row=1, sticky=tk.W, padx=5)
 
     mrn_value = tk.StringVar()
+    vcmd = root.register(only_digits)
     mrn_entry = tk.Entry(root, font=base_font,
-                         textvariable=mrn_value, width=18)
+                         textvariable=mrn_value, width=18,
+                         validate="key",
+                         validatecommand=(vcmd, "%P"))
     mrn_entry.grid(column=2, row=3, sticky=tk.E, padx=5)
     mrn_label = tk.Label(root, text="Medical Record Number",
                          font=base_font)
@@ -159,14 +171,16 @@ def main_window():
 
     rn_value = tk.StringVar()
     rn_entry = tk.Entry(root, font=base_font,
-                        textvariable=rn_value, width=11)
+                        textvariable=rn_value, width=11,
+                        validate="key",
+                        validatecommand=(vcmd, "%P"))
     rn_entry.grid(column=3, row=3, sticky=tk.E, padx=5)
     rn_label = tk.Label(root, text="Room Number", font=base_font)
     rn_label.grid(column=3, row=1, sticky=tk.W, padx=5)
 
     cpap_value = tk.StringVar()
     cpap_entry = tk.Entry(root, font=base_font,
-                          textvariable=rn_value, width=20)
+                          textvariable=cpap_value, width=20)
     cpap_entry.grid(column=4, row=3, sticky=tk.E, padx=5)
     cpap_label = tk.Label(root, text="CPAP Pressure (cmH2O)", font=base_font)
     cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
@@ -190,7 +204,7 @@ def main_window():
     status_label = tk.Label(frame, textvariable=status_value, font=base_font)
     status_label.grid(column=0, row=7, columnspan=5, padx=15)
 
-    # root.mainloop()
+    root.mainloop()
 
 
 if __name__ == "__main__":
