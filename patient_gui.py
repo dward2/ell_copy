@@ -180,7 +180,9 @@ def main_window():
 
     cpap_value = tk.StringVar()
     cpap_entry = tk.Entry(root, font=base_font,
-                          textvariable=cpap_value, width=20)
+                          textvariable=cpap_value, width=20,
+                          validate="key",
+                          validatecommand=(vcmd, "%P"))
     cpap_entry.grid(column=4, row=3, sticky=tk.E, padx=5)
     cpap_label = tk.Label(root, text="CPAP Pressure (cmH2O)", font=base_font)
     cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
