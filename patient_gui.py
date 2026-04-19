@@ -101,6 +101,25 @@ def only_digits(value):
     return value.isdigit()
 
 
+def check_required_fields(mrn, rn):
+    """Checks if required fields are filled
+    to clear patient for CPAP file selection,
+    returns a list of missing field names.
+    Args:
+        mrn (str): The medical record number value.
+        rn (str): The room number value.
+    Returns:
+        list: List of missing field names, empty if all
+        required fields are filled.
+    """
+    errors = []
+    if validate_mrn(mrn) is not True:
+        errors.append("MRN")
+    if validate_rn(rn) is not True:
+        errors.append("Room Number")
+    return errors
+
+
 def main_window():
 
     def name_enter():
@@ -157,7 +176,6 @@ def main_window():
     name_label = tk.Label(root, text="Patient Name",
                           font=base_font)
     name_label.grid(column=0, row=1, sticky=tk.W, padx=5)
-
     mrn_value = tk.StringVar()
     vcmd = root.register(only_digits)
     mrn_entry = tk.Entry(root, font=base_font,
@@ -206,6 +224,8 @@ def main_window():
     status_label = tk.Label(frame, textvariable=status_value, font=base_font)
     status_label.grid(column=0, row=7, columnspan=5, padx=15)
 
+    mrn_value.trace_add("write", check_entry)
+    rn_value.trace_add("write", check_entry)
     root.mainloop()
 
 
