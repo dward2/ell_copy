@@ -183,6 +183,15 @@ def main_window():
             button_file.config(state=tk.NORMAL)
             status_value.set("Ready to select CPAP file.")
 
+    def select_cpap_file():
+        filename = filedialog.askopenfilename(
+            title="Select CPAP data file",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if filename == "":
+            return
+        status_value.set("File selected: " + filename)
+
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
@@ -223,7 +232,8 @@ def main_window():
     cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
 
     button_file = tk.Button(root, text="Select CPAP File",
-                            font=base_font, state=tk.DISABLED)
+                            font=base_font, state=tk.DISABLED,
+                            command=select_cpap_file)
     button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
 
     button_reset = tk.Button(root, text="Reset",
