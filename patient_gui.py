@@ -3,6 +3,7 @@ from tkinter import ttk
 from tkinter import filedialog
 import numpy as np
 import matplotlib as plt
+from cpap_analysis import cpap_analysis
 
 base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
@@ -190,7 +191,9 @@ def main_window():
         )
         if filename == "":
             return
-        status_value.set("File selected: " + filename)
+        results = cpap_analysis(filename)
+        br_value.set(str(int(results["breathing_rate"])))
+
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
@@ -243,6 +246,15 @@ def main_window():
     button_up = tk.Button(root, text="Upload",
                           font=base_font, state=tk.DISABLED)
     button_up.grid(column=2, row=9, sticky=tk.W, padx=10)
+
+    br_value = tk.StringVar()
+    br_label = tk.Label(root, text="Breathing rate (bpm):",
+                        font=base_font)
+    br_label.grid(column=0, row=5, sticky=tk.W, padx=5)
+    br_display = tk.Label(root, textvariable=br_value,
+                          font=base_font)
+    br_display.grid(column=1, row=5, sticky=tk.W, padx=5)
+
 
     frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
     frame.grid(column=0, row=6, columnspan=5, pady=10)
