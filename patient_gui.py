@@ -113,10 +113,12 @@ def check_required_fields(mrn, rn):
         required fields are filled.
     """
     errors = []
-    if validate_mrn(mrn) is not True:
-        errors.append("MRN")
-    if validate_rn(rn) is not True:
-        errors.append("Room Number")
+    mrn_result = validate_mrn(mrn)
+    if mrn_result is not True:
+        errors.append(mrn_result)
+    rn_result = validate_rn(rn)
+    if rn_result is not True:
+        errors.append(rn_result)
     return errors
 
 
@@ -165,6 +167,21 @@ def main_window():
         if result is not True:
             return False
         return True
+
+    def check_entry(*args):
+        '''Enables or disables the CPAP file selection button.
+        Updates the status bar with missing field names
+        or a ready message.
+        Args:
+        *args: Unused arguments passed by trace_add callback.
+        '''
+        errors = check_required_fields(mrn_value.get(), rn_value.get())
+        if errors:
+            button_file.config(state=tk.DISABLED)
+            status_value.set("\n".join(errors))
+        else:
+            button_file.config(state=tk.NORMAL)
+            status_value.set("Ready to select CPAP file.")
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
