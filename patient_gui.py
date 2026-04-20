@@ -250,6 +250,31 @@ def main_window():
         canvas.get_tk_widget().grid(column=0, row=0)
         plt.close(fig)
 
+    def reset_device():
+        '''Resets all fields and displays to their default state.
+        Clears all entries, results, and plot.
+        Reactivates MRN and room number entries.
+        '''
+        name_value.set("")
+        mrn_value.set("")
+        rn_value.set("")
+        cpap_value.set("")
+        br_value.set("")
+        apnea_value.set("")
+        apnea_display.config(fg="black")
+
+        for widget in plot_frame.winfo_children():
+            widget.destroy()
+
+        mrn_entry.config(state=tk.NORMAL)
+        rn_entry.config(state=tk.NORMAL)
+
+        button_file.config(state=tk.DISABLED)
+        button_up.config(state=tk.DISABLED)
+        button_reset.config(state=tk.DISABLED)
+
+        status_value.set("Enter Patient Information Above")
+
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
@@ -295,7 +320,8 @@ def main_window():
     button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
 
     button_reset = tk.Button(root, text="Reset",
-                             font=base_font, state=tk.DISABLED)
+                             font=base_font, state=tk.DISABLED,
+                             command=reset_device)
     button_reset.grid(column=3, row=9, sticky=tk.W, padx=10)
 
     button_up = tk.Button(root, text="Upload",
