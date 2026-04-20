@@ -193,7 +193,14 @@ def main_window():
             return
         results = cpap_analysis(filename)
         br_value.set(str(int(results["breathing_rate"])))
+        apnea_value.set(str(results["apnea_count"]))
 
+        if results["apnea_count"] >= 2:
+            apnea_display.config(fg="red")
+        else:
+            apnea_display.config(fg="white")
+
+        status_value.set("CPAP data analyzed.")
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
@@ -255,6 +262,13 @@ def main_window():
                           font=base_font)
     br_display.grid(column=1, row=5, sticky=tk.W, padx=5)
 
+    apnea_value = tk.StringVar()
+    apnea_label = tk.Label(root, text="Apnea Events:",
+                           font=base_font)
+    apnea_label.grid(column=2, row=5, sticky=tk.W, padx=5)
+    apnea_display = tk.Label(root, textvariable=apnea_value,
+                             font=base_font)
+    apnea_display.grid(column=3, row=5, sticky=tk.W, padx=5)
 
     frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
     frame.grid(column=0, row=6, columnspan=5, pady=10)
