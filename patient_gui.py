@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 from cpap_analysis import cpap_analysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -205,7 +205,28 @@ def main_window():
         else:
             apnea_display.config(fg="white")
 
+        cpap_plot(results["time_data"], results["flow_data"])
         status_value.set("CPAP data analyzed.")
+
+    def cpap_plot(time_data, flow_data):
+        """Create and display a flow vs time plot in the GUI.
+        Args:
+            time_data (list): time values in seconds.
+            flow_data (list): flow rate values.
+        """
+        for widget in plot_frame.winfo_children():
+            widget.destroy()
+
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.plot(time_data, flow_data)
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Flow Rate (L/s)")
+        ax.set_title("Flow vs Time")
+
+        canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(column=0, row=0)
+        plt.close(fig)
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
