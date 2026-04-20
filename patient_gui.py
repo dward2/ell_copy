@@ -4,6 +4,7 @@ from tkinter import filedialog
 import numpy as np
 import matplotlib as plt
 from cpap_analysis import cpap_analysis
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
@@ -185,6 +186,10 @@ def main_window():
             status_value.set("Ready to select CPAP file.")
 
     def select_cpap_file():
+        '''Opens file dialog to select and analyze a CPAP data file.
+        Displays breathing rate and apnea count in the GUI.
+        Apnea count is displayed in red if >= 2.
+        '''
         filename = filedialog.askopenfilename(
             title="Select CPAP data file",
             filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
@@ -272,6 +277,9 @@ def main_window():
 
     frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
     frame.grid(column=0, row=6, columnspan=5, pady=10)
+
+    plot_frame = tk.Frame(root)
+    plot_frame.grid(column=0, row=8, columnspan=5, pady=10)
 
     status_value = tk.StringVar(value="Enter Patient Information Above")
     status_label = tk.Label(frame, textvariable=status_value, font=base_font)
