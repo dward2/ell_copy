@@ -8,6 +8,15 @@ server = 'http://127.0.0.1:5000'
 
 def monitering_gui():
 
+    current_patient = {
+        "name": "",
+        "mrn": None,
+        "pressure": None,
+        "br": None,
+        "apnea": None,
+        "times": []
+    }
+
     def append_new_pressure():
         # append data to patient
         print(new_pressure.get())
@@ -27,26 +36,65 @@ def monitering_gui():
                     command=tk._setit(chosen_room, str(room))
                 )
 
+    def add_times():
+        menu = time_select["menu"]
+        new_times = current_patient["times"]
+        for time in new_times:
+            # only add NEW times to the option menu
+            if time not in times:
+                times.append(time)
+                menu.add_command(
+                    label=str(time),
+                    command=tk._setit(chosen_time, str(time))
+                )
 
-    def display_patient(*args):
+    def display_patient():
+        global current_patient
         try:
             room_selected = int(chosen_room.get())
         except:
             return
         r = requests.get(server + f"/patient/{room_selected}")
-        p_dict = r.json()
-        p_data.set(f"{p_dict['name']}\nid: {p_dict['mrn']}\nLatest Pressure: {p_dict['pressure']}\nBreathing Rate: {p_dict['br']}")
-        a_data.set(int(p_dict["apnea"]))
-        #color the apnea data
+        current_patient = r.json()
+        print(current_patient.get("times", []))
+
+        p_data.set(f"{current_patient['name']}\nid: {current_patient['mrn']}\nLatest Pressure: {current_patient['pressure']}\nBreathing Rate: {current_patient['br']}")
+        a_data.set(int(current_patient["apnea"]))
+
         if a_data.get() > 2:
             apnea_data.config(fg="red")
         else:
             apnea_data.config(fg="black")
 
+
+    def change_times():
+        global current_patient
+        # reset menu and add room's patient's times
+        chosen_time.set('-')
+        menu = time_select["menu"]
+        # delete all times
+        menu.delete(0, "end")
+        times.clear()
+        new_times = current_patient.get("times", [])
+        print(new_times)
+        for t in new_times:
+            menu.add_command(
+                label=t,
+                command=tk._setit(chosen_time, t)
+            )
+
+
+    def room_changed(*args):
+        display_patient()
+        change_times()
+        
+
     def update_data():
         update_rooms()
         display_patient()
+        add_times()
         root.after(30000, update_data)
+
 
     initial_root = tk.Tk()
     initial_root.geometry('470x470')
@@ -59,7 +107,7 @@ def monitering_gui():
     room_label.grid(row=0, column=0, sticky='w')
 
     chosen_room = tk.StringVar(value="-")
-    chosen_room.trace_add("write", display_patient)
+    chosen_room.trace_add("write", room_changed)
     rooms = ['000']
     room_select = tk.OptionMenu(root, chosen_room, *rooms)
     room_select.config(width=10)
