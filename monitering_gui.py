@@ -27,6 +27,14 @@ def monitering_gui():
                     command=tk._setit(chosen_room, str(room))
                 )
 
+
+    def display_patient(*args):
+        room_selected = int(chosen_room.get())
+        r = requests.get(server + f"/patient/{room_selected}")
+        p_dict = r.json()
+        p_data.set(f"{p_dict['name']}\nid: {p_dict['mrn']}\nLatest Pressure: {p_dict['pressure']}")
+        a_data.set(int(p_dict["apnea"]))
+
     def update_data():
         update_rooms()
         root.after(30000, update_data)
@@ -42,7 +50,8 @@ def monitering_gui():
     room_label.grid(row=0, column=0, sticky='w')
 
     chosen_room = tk.StringVar(value="-")
-    rooms = [400]
+    chosen_room.trace_add("write", display_patient)
+    rooms = ['000']
     room_select = tk.OptionMenu(root, chosen_room, *rooms)
     room_select.config(width=10)
     room_select.grid(row=1, column=0, sticky='w')
