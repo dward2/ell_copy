@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
+from cpap_analysis import cpap_analysis
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
@@ -101,6 +103,42 @@ def only_digits(value):
     return value.isdigit()
 
 
+def check_required_fields(mrn, rn):
+    """Checks if required fields are filled
+    to clear patient for CPAP file selection,
+    returns a list of missing field names.
+    Args:
+        mrn (str): The medical record number value.
+        rn (str): The room number value.
+    Returns:
+        list: List of missing field names, empty if all
+        required fields are filled.
+    """
+    errors = []
+    mrn_result = validate_mrn(mrn)
+    if mrn_result is not True:
+        errors.append(mrn_result)
+    rn_result = validate_rn(rn)
+    if rn_result is not True:
+        errors.append(rn_result)
+    return errors
+
+
+def apnea_color(ap):
+    '''Deterimines the display color for apnea count.
+    Red if apnea count is 2 or greater.
+    White/default otherwise.
+    Args:
+        ap (int): The number of apnea events.
+    Returns:
+        str: 'red' if count >= 2, 'white' otherwise.
+    '''
+    if ap >= 2:
+        return "red"
+    else:
+        return "white"
+
+
 def main_window():
 
     def name_enter():
@@ -147,6 +185,60 @@ def main_window():
             return False
         return True
 
+    def check_entry(*args):
+        '''Enables or disables the CPAP file selection button.
+        Updates the status bar with missing field names
+        or a ready message.
+        Args:
+        *args: Unused arguments passed by trace_add callback.
+        '''
+        errors = check_required_fields(mrn_value.get(), rn_value.get())
+        if errors:
+            button_file.config(state=tk.DISABLED)
+            status_value.set("\n".join(errors))
+        else:
+            button_file.config(state=tk.NORMAL)
+            status_value.set("Ready to select CPAP file.")
+
+    def select_cpap_file():
+        '''Opens file dialog to select and analyze a CPAP data file.
+        Displays breathing rate and apnea count in the GUI.
+        Apnea count is displayed in red if >= 2.
+        '''
+        filename = filedialog.askopenfilename(
+            title="Select CPAP data file",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+        )
+        if filename == "":
+            return
+        results = cpap_analysis(filename)
+        br_value.set(str(int(results["breathing_rate"])))
+        apnea_value.set(str(results["apnea_count"]))
+        apnea_display.config(fg=apnea_color(results["apnea_count"]))
+
+        cpap_plot(results["time_data"], results["flow_data"])
+        status_value.set("CPAP data analyzed.")
+
+    def cpap_plot(time_data, flow_data):
+        """Create and display a flow vs time plot in the GUI.
+        Args:
+            time_data (list): time values in seconds.
+            flow_data (list): flow rate values.
+        """
+        for widget in plot_frame.winfo_children():
+            widget.destroy()
+
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.plot(time_data, flow_data)
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Flow Rate (L/s)")
+        ax.set_title("Flow vs Time")
+
+        canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+        canvas.draw()
+        canvas.get_tk_widget().grid(column=0, row=0)
+        plt.close(fig)
+
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
@@ -157,7 +249,6 @@ def main_window():
     name_label = tk.Label(root, text="Patient Name",
                           font=base_font)
     name_label.grid(column=0, row=1, sticky=tk.W, padx=5)
-
     mrn_value = tk.StringVar()
     vcmd = root.register(only_digits)
     mrn_entry = tk.Entry(root, font=base_font,
@@ -188,7 +279,8 @@ def main_window():
     cpap_label.grid(column=4, row=1, sticky=tk.W, padx=5)
 
     button_file = tk.Button(root, text="Select CPAP File",
-                            font=base_font, state=tk.DISABLED)
+                            font=base_font, state=tk.DISABLED,
+                            command=select_cpap_file)
     button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
 
     button_reset = tk.Button(root, text="Reset",
@@ -199,13 +291,34 @@ def main_window():
                           font=base_font, state=tk.DISABLED)
     button_up.grid(column=2, row=9, sticky=tk.W, padx=10)
 
+    br_value = tk.StringVar()
+    br_label = tk.Label(root, text="Breathing rate (bpm):",
+                        font=base_font)
+    br_label.grid(column=0, row=5, sticky=tk.W, padx=5)
+    br_display = tk.Label(root, textvariable=br_value,
+                          font=base_font)
+    br_display.grid(column=1, row=5, sticky=tk.W, padx=5)
+
+    apnea_value = tk.StringVar()
+    apnea_label = tk.Label(root, text="Apnea Events:",
+                           font=base_font)
+    apnea_label.grid(column=2, row=5, sticky=tk.W, padx=5)
+    apnea_display = tk.Label(root, textvariable=apnea_value,
+                             font=base_font)
+    apnea_display.grid(column=3, row=5, sticky=tk.W, padx=5)
+
     frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
     frame.grid(column=0, row=6, columnspan=5, pady=10)
+
+    plot_frame = tk.Frame(root)
+    plot_frame.grid(column=0, row=8, columnspan=5, pady=10)
 
     status_value = tk.StringVar(value="Enter Patient Information Above")
     status_label = tk.Label(frame, textvariable=status_value, font=base_font)
     status_label.grid(column=0, row=7, columnspan=5, padx=15)
 
+    mrn_value.trace_add("write", check_entry)
+    rn_value.trace_add("write", check_entry)
     root.mainloop()
 
 

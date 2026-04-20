@@ -5,6 +5,8 @@ from patient_gui import validate_mrn
 from patient_gui import validate_rn
 from patient_gui import validate_pressure
 from patient_gui import only_digits
+from patient_gui import check_required_fields
+from patient_gui import apnea_color
 
 
 @pytest.mark.parametrize("name , expected", [
@@ -81,3 +83,28 @@ def test_validate_pressure(pres, expected):
 ])
 def test_only_digits(value, expected):
     assert only_digits(value) == expected
+
+
+@pytest.mark.parametrize("mrn, rn, expected", [
+    ("123", "101", []),
+    ("", "101", ["Please enter Medical Record Number"]),
+    ("123", "", ["Please enter Room Number"]),
+    ("", "", ["Please enter Medical Record Number",
+              "Please enter Room Number"]),
+    ("abc", "101", ["MRN Invalid"]),
+    ("123", "abc", ["Room Number Invalid"]),
+    ("abc", "xyz", ["MRN Invalid", "Room Number Invalid"]),
+])
+def test_check_required_fields(mrn, rn, expected):
+    assert check_required_fields(mrn, rn) == expected
+
+
+@pytest.mark.parametrize("count, expected", [
+    (0, "white"),
+    (1, "white"),
+    (2, "red"),
+    (3, "red"),
+    (10, "red"),
+])
+def test_apnea_color(count, expected):
+    assert apnea_color(count) == expected
