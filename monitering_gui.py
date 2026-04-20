@@ -2,12 +2,18 @@ import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
 
+# connect to server
+
 
 def monitering_gui():
 
     def append_new_pressure():
         # append data to patient
         print(new_pressure.get())
+
+    def update_data():
+        
+        root.after(30000, update_data)
 
     initial_root = tk.Tk()
     initial_root.geometry('470x470')
@@ -20,7 +26,7 @@ def monitering_gui():
     room_label.grid(row=0, column=0, sticky='w')
 
     chosen_room = tk.StringVar(value="-")
-    rooms = [100, 200, 300]
+    rooms = [0]
     room_select = tk.OptionMenu(root, chosen_room, *rooms)
     room_select.config(width=10)
     room_select.grid(row=1, column=0, sticky='w')
@@ -107,6 +113,7 @@ def monitering_gui():
     save_image2 = tk.Button(root, text='Save Image')
     save_image2.grid(row=8, column=2, columnspan=2)
 
+    update_data()
     root.mainloop()
 
 
