@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
+import requests
 
 # connect to server
-
+server = 'http://127.0.0.1:5000'
 
 def monitering_gui():
 
@@ -11,8 +12,23 @@ def monitering_gui():
         # append data to patient
         print(new_pressure.get())
 
+
+    def update_rooms():
+        menu = room_select["menu"]
+        r = requests.get(server+"/rooms")
+        if r.status_code == 200:
+            new_rooms = r.json()
+        for room in new_rooms:
+            # only add NEW rooms to the option menu
+            if room not in rooms:
+                rooms.append(room)
+                menu.add_command(
+                    label=str(room),
+                    command=tk._setit(chosen_room, str(room))
+                )
+
     def update_data():
-        
+        update_rooms()
         root.after(30000, update_data)
 
     initial_root = tk.Tk()
@@ -26,7 +42,7 @@ def monitering_gui():
     room_label.grid(row=0, column=0, sticky='w')
 
     chosen_room = tk.StringVar(value="-")
-    rooms = [0]
+    rooms = [400]
     room_select = tk.OptionMenu(root, chosen_room, *rooms)
     room_select.config(width=10)
     room_select.grid(row=1, column=0, sticky='w')
