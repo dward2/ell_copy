@@ -124,6 +124,21 @@ def check_required_fields(mrn, rn):
     return errors
 
 
+def apnea_color(ap):
+    '''Deterimines the display color for apnea count.
+    Red if apnea count is 2 or greater.
+    White/default otherwise.
+    Args:
+        ap (int): The number of apnea events.
+    Returns:
+        str: 'red' if count >= 2, 'white' otherwise.
+    '''
+    if ap >= 2:
+        return "red"
+    else:
+        return "white"
+
+
 def main_window():
 
     def name_enter():
@@ -199,11 +214,7 @@ def main_window():
         results = cpap_analysis(filename)
         br_value.set(str(int(results["breathing_rate"])))
         apnea_value.set(str(results["apnea_count"]))
-
-        if results["apnea_count"] >= 2:
-            apnea_display.config(fg="red")
-        else:
-            apnea_display.config(fg="white")
+        apnea_display.config(fg=apnea_color(results["apnea_count"]))
 
         cpap_plot(results["time_data"], results["flow_data"])
         status_value.set("CPAP data analyzed.")

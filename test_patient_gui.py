@@ -6,6 +6,7 @@ from patient_gui import validate_rn
 from patient_gui import validate_pressure
 from patient_gui import only_digits
 from patient_gui import check_required_fields
+from patient_gui import apnea_color
 
 
 @pytest.mark.parametrize("name , expected", [
@@ -96,3 +97,14 @@ def test_only_digits(value, expected):
 ])
 def test_check_required_fields(mrn, rn, expected):
     assert check_required_fields(mrn, rn) == expected
+
+
+@pytest.mark.parametrize("count, expected", [
+    (0, "white"),
+    (1, "white"),
+    (2, "red"),
+    (3, "red"),
+    (10, "red"),
+])
+def test_apnea_color(count, expected):
+    assert apnea_color(count) == expected
