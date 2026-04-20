@@ -58,6 +58,12 @@ def monitering_gui():
                 )
 
 
+    def time_recent():
+        global current_patient
+        recent_time = current_patient["times"][-1]
+        image2_time.set(recent_time)
+
+
     def display_patient():
         global current_patient
         try:
@@ -75,6 +81,8 @@ def monitering_gui():
             apnea_data.config(fg="red")
         else:
             apnea_data.config(fg="black")
+
+        time_recent()
 
 
     def change_times():
@@ -133,7 +141,7 @@ def monitering_gui():
 
 
     initial_root = tk.Tk()
-    initial_root.geometry('470x470')
+    initial_root.geometry('470x490')
     # initial_root.resizable(width=False, height=False)
     initial_root.title("Moniter Patient")
     root = tk.Frame(initial_root)
