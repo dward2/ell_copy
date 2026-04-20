@@ -200,6 +200,17 @@ def main_window():
             button_file.config(state=tk.NORMAL)
             status_value.set("Ready to select CPAP file.")
 
+    def check_reset(*args):
+        '''Enable reset button if any field has data entered.
+        Args:
+            *args: Unused arguments passed by trace_add callback.
+        '''
+        if (name_value.get() or mrn_value.get()
+                or rn_value.get() or cpap_value.get()):
+            button_reset.config(state=tk.NORMAL)
+        else:
+            button_reset.config(state=tk.DISABLED)
+
     def select_cpap_file():
         '''Opens file dialog to select and analyze a CPAP data file.
         Displays breathing rate and apnea count in the GUI.
@@ -238,6 +249,31 @@ def main_window():
         canvas.draw()
         canvas.get_tk_widget().grid(column=0, row=0)
         plt.close(fig)
+
+    def reset_device():
+        '''Resets all fields and displays to their default state.
+        Clears all entries, results, and plot.
+        Reactivates MRN and room number entries.
+        '''
+        name_value.set("")
+        mrn_value.set("")
+        rn_value.set("")
+        cpap_value.set("")
+        br_value.set("")
+        apnea_value.set("")
+        apnea_display.config(fg="black")
+
+        for widget in plot_frame.winfo_children():
+            widget.destroy()
+
+        mrn_entry.config(state=tk.NORMAL)
+        rn_entry.config(state=tk.NORMAL)
+
+        button_file.config(state=tk.DISABLED)
+        button_up.config(state=tk.DISABLED)
+        button_reset.config(state=tk.DISABLED)
+
+        status_value.set("Enter Patient Information Above")
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
@@ -284,7 +320,8 @@ def main_window():
     button_file.grid(column=0, row=9, sticky=tk.W, padx=10)
 
     button_reset = tk.Button(root, text="Reset",
-                             font=base_font, state=tk.DISABLED)
+                             font=base_font, state=tk.DISABLED,
+                             command=reset_device)
     button_reset.grid(column=3, row=9, sticky=tk.W, padx=10)
 
     button_up = tk.Button(root, text="Upload",
@@ -319,6 +356,11 @@ def main_window():
 
     mrn_value.trace_add("write", check_entry)
     rn_value.trace_add("write", check_entry)
+
+    name_value.trace_add("write", check_reset)
+    mrn_value.trace_add("write", check_reset)
+    rn_value.trace_add("write", check_reset)
+    cpap_value.trace_add("write", check_reset)
     root.mainloop()
 
 
