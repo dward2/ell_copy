@@ -32,7 +32,7 @@ def monitering_gui():
         room_selected = int(chosen_room.get())
         r = requests.get(server + f"/patient/{room_selected}")
         p_dict = r.json()
-        p_data.set(f"{p_dict['name']}\nid: {p_dict['mrn']}\nLatest Pressure: {p_dict['pressure']}")
+        p_data.set(f"{p_dict['name']}\nid: {p_dict['mrn']}\nLatest Pressure: {p_dict['pressure']}\nBreathing Rate: {p_dict['br']}")
         a_data.set(int(p_dict["apnea"]))
 
     def update_data():
