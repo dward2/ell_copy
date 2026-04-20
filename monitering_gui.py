@@ -6,6 +6,7 @@ import requests
 # connect to server
 server = 'http://127.0.0.1:5000'
 
+
 def monitering_gui():
 
     current_patient = {
@@ -29,7 +30,6 @@ def monitering_gui():
         else:
             pressure_warning.config(text='Enter integer between 4 and 25')
 
-
     def update_rooms():
         menu = room_select["menu"]
         r = requests.get(server+"/rooms")
@@ -44,7 +44,6 @@ def monitering_gui():
                     command=tk._setit(chosen_room, str(room))
                 )
 
-
     def add_times():
         menu = time_select["menu"]
         new_times = current_patient["times"]
@@ -57,24 +56,27 @@ def monitering_gui():
                     command=tk._setit(chosen_time, str(time))
                 )
 
-
     def time_recent():
         global current_patient
         recent_time = current_patient["times"][-1]
         image2_time.set(recent_time)
 
-
     def display_patient():
         global current_patient
         try:
             room_selected = int(chosen_room.get())
-        except:
+        except TypeError:
             return
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
         print(current_patient.get("times", []))
 
-        p_data.set(f"{current_patient['name']}\nid: {current_patient['mrn']}\nLatest Pressure: {current_patient['pressure']}\nBreathing Rate: {current_patient['br']}")
+        p_data.set(
+            f"{current_patient['name']}\n"
+            f"id: {current_patient['mrn']}\n"
+            f"Latest Pressure: {current_patient['pressure']}\n"
+            f"Breathing Rate: {current_patient['br']}"
+        )
         a_data.set(int(current_patient["apnea"]))
 
         if a_data.get() > 2:
@@ -83,7 +85,6 @@ def monitering_gui():
             apnea_data.config(fg="black")
 
         time_recent()
-
 
     def change_times():
         global current_patient
@@ -100,15 +101,12 @@ def monitering_gui():
                 command=tk._setit(chosen_time, t)
             )
 
-
     def room_changed(*args):
         display_patient()
         change_times()
 
-
     def time_changed(*args):
         image1_time.set(chosen_time.get())
-
 
     def save_file1():
         global current_img1
@@ -116,8 +114,7 @@ def monitering_gui():
             defaultextension=".png",
         )
         if file_path:
-            current_img1.save(file_path)    
-
+            current_img1.save(file_path)
 
     def save_file2():
         global current_img2
@@ -126,7 +123,6 @@ def monitering_gui():
         )
         if file_path:
             current_img2.save(file_path)
-
 
     def update_data():
         global current_img1
@@ -138,7 +134,6 @@ def monitering_gui():
         current_img1 = img_open1
         current_img2 = img_open2
         root.after(30000, update_data)
-
 
     initial_root = tk.Tk()
     initial_root.geometry('470x490')
@@ -207,7 +202,8 @@ def monitering_gui():
                                 command=append_new_pressure)
     pressure_button.grid(row=5, column=1, sticky='n')
 
-    pressure_warning = tk.Label(root, text="", font=("Helvetica", 10, "italic"))
+    pressure_warning = tk.Label(root, text="",
+                                font=("Helvetica", 10, "italic"))
     pressure_warning.grid(row=4, column=2, columnspan=2, sticky='w')
 
     # display cpap images:

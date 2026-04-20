@@ -23,7 +23,8 @@ def get_patient_data_from_room(room):
     # list of cpap timestamps
     print(room)
     patient = {"name": f"ella {room}", "mrn": 1234, "cpap image": "image_str",
-               "times": ["mm/dd/yy 00:00", "01/30/04 00:00"], "pressure": 5, "apnea": 3, "br": 4}
+               "times": ["mm/dd/yy 00:00", "01/30/04 00:00"], "pressure": 5,
+               "apnea": 3, "br": 4}
     return jsonify(patient)
 
 
@@ -37,12 +38,12 @@ def get_cpap_from_time(time):
 def new_pressure(p):
     try:
         p = int(p)
-    except:
+    except TypeError:
         return "invalid", 400
 
-    if p >= 4 and p<=25:
-            print(f'add pressure {p}')
-            return "added pressure", 200
+    if p >= 4 and p <= 25:
+        print(f'add pressure {p}')
+        return "added pressure", 200
     else:
         return "invalid", 400
 
