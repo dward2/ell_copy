@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import requests
 
@@ -16,6 +16,8 @@ def monitering_gui():
         "apnea": None,
         "times": []
     }
+    current_img1 = None
+    current_img2 = None
 
     def append_new_pressure():
         # append data to patient
@@ -89,10 +91,32 @@ def monitering_gui():
         change_times()
         
 
+    def save_file1():
+        global current_img1
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+        )
+        if file_path:
+            current_img1.save(file_path)    
+            
+            
+    def save_file2():
+        global current_img2
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".png",
+        )
+        if file_path:
+            current_img2.save(file_path)
+
     def update_data():
+        global current_img1
+        global current_img2
+
         update_rooms()
         display_patient()
         add_times()
+        current_img1 = img_open1
+        current_img2 = img_open2
         root.after(30000, update_data)
 
 
@@ -174,6 +198,7 @@ def monitering_gui():
     img_resized2 = img_open2.resize((200, 200))
     img_tk2 = ImageTk.PhotoImage(img_resized2)
     cpap_image2 = tk.Label(root, image=img_tk2)
+    cpap_image2.image = img_tk2
     cpap_image2.grid(row=6, column=2, columnspan=2, sticky='s')
 
     image1_time = tk.StringVar()
@@ -187,9 +212,9 @@ def monitering_gui():
     image2_label = tk.Label(root, textvariable=image2_time)
     image2_label.grid(row=7, column=2, columnspan=2)
 
-    save_image1 = tk.Button(root, text='Save Image')
+    save_image1 = tk.Button(root, text='Save Image', command=save_file1)
     save_image1 .grid(row=8, column=0, columnspan=2)
-    save_image2 = tk.Button(root, text='Save Image')
+    save_image2 = tk.Button(root, text='Save Image', command=save_file2)
     save_image2.grid(row=8, column=2, columnspan=2)
 
     update_data()
