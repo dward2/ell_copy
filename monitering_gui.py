@@ -21,7 +21,13 @@ def monitering_gui():
 
     def append_new_pressure():
         # append data to patient
-        print(new_pressure.get())
+        p = new_pressure.get()
+        r = requests.post(server + f"/pressure/{p}")
+        if r.status_code == 200:
+            new_pressure.set("")
+            pressure_warning.config(text='')
+        else:
+            pressure_warning.config(text='Enter integer between 4 and 25')
 
 
     def update_rooms():
@@ -38,6 +44,7 @@ def monitering_gui():
                     command=tk._setit(chosen_room, str(room))
                 )
 
+
     def add_times():
         menu = time_select["menu"]
         new_times = current_patient["times"]
@@ -49,6 +56,7 @@ def monitering_gui():
                     label=str(time),
                     command=tk._setit(chosen_time, str(time))
                 )
+
 
     def display_patient():
         global current_patient
@@ -89,7 +97,7 @@ def monitering_gui():
     def room_changed(*args):
         display_patient()
         change_times()
-        
+
 
     def save_file1():
         global current_img1
@@ -98,8 +106,8 @@ def monitering_gui():
         )
         if file_path:
             current_img1.save(file_path)    
-            
-            
+
+
     def save_file2():
         global current_img2
         file_path = filedialog.asksaveasfilename(
@@ -107,6 +115,7 @@ def monitering_gui():
         )
         if file_path:
             current_img2.save(file_path)
+
 
     def update_data():
         global current_img1
@@ -185,6 +194,9 @@ def monitering_gui():
     pressure_button = tk.Button(root, text='Submit',
                                 command=append_new_pressure)
     pressure_button.grid(row=5, column=1, sticky='n')
+
+    pressure_warning = tk.Label(root, text="", font=("Helvetica", 10, "italic"))
+    pressure_warning.grid(row=4, column=2, columnspan=2, sticky='w')
 
     # display cpap images:
     img_open1 = Image.open("cpap1.png")
