@@ -29,14 +29,23 @@ def monitering_gui():
 
 
     def display_patient(*args):
-        room_selected = int(chosen_room.get())
+        try:
+            room_selected = int(chosen_room.get())
+        except:
+            return
         r = requests.get(server + f"/patient/{room_selected}")
         p_dict = r.json()
         p_data.set(f"{p_dict['name']}\nid: {p_dict['mrn']}\nLatest Pressure: {p_dict['pressure']}\nBreathing Rate: {p_dict['br']}")
         a_data.set(int(p_dict["apnea"]))
+        #color the apnea data
+        if a_data.get() > 2:
+            apnea_data.config(fg="red")
+        else:
+            apnea_data.config(fg="black")
 
     def update_data():
         update_rooms()
+        display_patient()
         root.after(30000, update_data)
 
     initial_root = tk.Tk()
@@ -59,9 +68,9 @@ def monitering_gui():
     patient_label = tk.Label(root, text="Patient: ")
     patient_label.grid(row=0, column=2, sticky='nw')
 
-    p_data = tk.StringVar(value='Ella Fortenbery\nid: 123\nLatest Pressure: 4')
+    p_data = tk.StringVar(value="Select a room to see a patient's information")
     patient_data = tk.Label(root, textvariable=p_data,
-                            wraplength=200, justify='left')
+                            wraplength=150, justify='left')
     patient_data.grid(column=3, row=0, rowspan=2, sticky='nw')
 
     time_label = tk.Label(root, text='Select Time:')
@@ -77,12 +86,9 @@ def monitering_gui():
     apnea_label = tk.Label(root, text="Apnea: ")
     apnea_label.grid(row=3, column=2, sticky='w')
 
-    a_data = tk.IntVar(value='1')
+    a_data = tk.IntVar(value='-')
     apnea_color = tk.StringVar()
-    if a_data.get() > 2:
-        apnea_color.set("red")
-    else:
-        apnea_color.set("black")
+    apnea_color.set("black")
     apnea_data = tk.Label(root, textvariable=a_data, fg=apnea_color.get())
     apnea_data.grid(column=3, row=3, sticky='wn')
 
