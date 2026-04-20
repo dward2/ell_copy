@@ -86,7 +86,6 @@ def monitering_gui():
         menu.delete(0, "end")
         times.clear()
         new_times = current_patient.get("times", [])
-        print(new_times)
         for t in new_times:
             menu.add_command(
                 label=t,
@@ -97,6 +96,10 @@ def monitering_gui():
     def room_changed(*args):
         display_patient()
         change_times()
+
+
+    def time_changed(*args):
+        image1_time.set(chosen_time.get())
 
 
     def save_file1():
@@ -159,6 +162,7 @@ def monitering_gui():
 
     root.rowconfigure(4, pad=20)
     chosen_time = tk.StringVar(value="-")
+    chosen_time.trace_add("write", time_changed)
     times = ['mm/dd/yy hh:mm', '12/31/99 08:17', '03/05/09 14:45']
     time_select = tk.OptionMenu(root, chosen_time, *times)
     time_select.config(width=10)
