@@ -200,6 +200,17 @@ def main_window():
             button_file.config(state=tk.NORMAL)
             status_value.set("Ready to select CPAP file.")
 
+    def check_reset(*args):
+        '''Enable reset button if any field has data entered.
+        Args:
+            *args: Unused arguments passed by trace_add callback.
+        '''
+        if (name_value.get() or mrn_value.get()
+                or rn_value.get() or cpap_value.get()):
+            button_reset.config(state=tk.NORMAL)
+        else:
+            button_reset.config(state=tk.DISABLED)
+
     def select_cpap_file():
         '''Opens file dialog to select and analyze a CPAP data file.
         Displays breathing rate and apnea count in the GUI.
@@ -319,6 +330,11 @@ def main_window():
 
     mrn_value.trace_add("write", check_entry)
     rn_value.trace_add("write", check_entry)
+
+    name_value.trace_add("write", check_reset)
+    mrn_value.trace_add("write", check_reset)
+    rn_value.trace_add("write", check_reset)
+    cpap_value.trace_add("write", check_reset)
     root.mainloop()
 
 
