@@ -88,7 +88,29 @@ def validate_server_pressure(pres):
     if pres < 4 or pres > 25:
         return "CPAP pressure must be between 4 and 25"
     return True
+
+
 # validate cpap data
+def validate_server_cpap_data(br, apnea):
+    '''Validates breathing rate and
+    apnea count from server request.
+    Checks that apnea and breathing rate
+    are integers and non-negative.
+    Args:
+        br: the breathing rate
+        apnea: the apnea count
+    Returns:
+     True if valid, or an error message string.
+    '''
+    if not isinstance(br, int):
+        return "Breathing rate must be an integer"
+    if not isinstance(apnea, int):
+        return "Apnea count must be an integer"
+    if br < 0:
+        return "Breathing rate cannot be negative"
+    if apnea < 0:
+        return "Apnea count cannot be negative"
+    return True
 
 
 def upload_processing(data):

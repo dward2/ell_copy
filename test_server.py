@@ -5,6 +5,7 @@ from server import validate_server_mrn
 from server import validate_server_rn
 from server import validate_server_name
 from server import validate_server_pressure
+from server import validate_server_cpap_data
 
 
 @pytest.fixture(autouse=True)
@@ -71,6 +72,23 @@ def test_validate_server_name(name, expected):
 ])
 def test_validate_server_pressure(pres, expected):
     assert validate_server_pressure(pres) == expected
+
+
+@pytest.mark.parametrize("br, apnea, expected", [
+    (21, 3, True),
+    (18, 0, True),
+    (15, 1, True),
+    ("abc", 3, "Breathing rate must be an integer"),
+    (12.5, 3, "Breathing rate must be an integer"),
+    (None, 3, "Breathing rate must be an integer"),
+    (21, "abc", "Apnea count must be an integer"),
+    (21, 12.5, "Apnea count must be an integer"),
+    (21, None, "Apnea count must be an integer"),
+    (-1, 3, "Breathing rate cannot be negative"),
+    (21, -1, "Apnea count cannot be negative"),
+])
+def test_validate_server_cpap_data(br, apnea, expected):
+    assert validate_server_cpap_data(br, apnea) == expected
 
 
 @pytest.fixture
