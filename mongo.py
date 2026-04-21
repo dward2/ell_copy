@@ -18,6 +18,7 @@ def create_patient(mrn, rn, name=None):
     new_patient = {
         "mrn": mrn,
         "room_number": rn,
+        "name": name,
     }
     collection.insert_one(new_patient)
 
@@ -28,13 +29,13 @@ def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
         "name": name,
         "mrn": mrn,
         "room_number": rn,
+        "pressure": pres,
+        "apnea_count": apnea,
+        "breathing_rate": br,
         "cpap_data": [{
-            "pressure": pres,
-            "apnea_count": apnea,
-            "breathing_rate": br,
-            "cpap_image": cpap_image,
-            "timestamp": time
-        }],
+            "time": time,
+            "image": cpap_image
+        }]
     }
     collection.insert_one(new_patient)
 
@@ -49,16 +50,24 @@ def update_patient_name(mrn, name):
 
 
 def update_cpap_data(mrn, pres, apnea, br, cpap_image, time):
-    cpap_entry = {
-        "pressure": pres,
-        "apnea_count": apnea,
-        "breathing_rate": br,
-        "cpap_image": cpap_image,
-        "timestamp": time
-    }
+    # change the pressure, br, and apnea to new data.
+    # append new cpap image with timestamp
     collection.update_one(
         {"mrn": mrn},
-        {"$push": {"cpap_data": cpap_entry}}
+        {
+            "$set": {
+                "pressure": pres,
+                "apnea_count": apnea,
+                "breathing_rate": br
+            },
+            "$push": {
+                "cpap_data":
+                    {
+                        "time": time,
+                        "image": cpap_image
+                    }
+            }
+        }
     )
 
 
@@ -76,3 +85,7 @@ def change_pressure(room, p):
     patient = collection.find_one({"room_number": room})
     if patient is not None:
         collection.update_one({"room_number": room}, {"$set": {"pressure": p}})
+
+
+def reset_db():
+    collection.delete_many({})
