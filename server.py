@@ -1,6 +1,10 @@
 from flask import Flask, request, jsonify
 import mongo
 import base64
+from pymongo import MongoClient
+from mongo import collection, create_patient, update_patient_name
+from mongo import create_patient_cpap, update_cpap_data
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -8,6 +12,43 @@ app = Flask(__name__)
 @app.route("/", methods=['GET'])
 def server_status():
     return "server is running"
+
+
+@app.route("/api/patient", methods=["POST"])
+def upload_patient():
+    data = request.get_json()
+    mrn = data["mrn"]
+    room_number = data["room_number"]
+    name = data.get("name", None)
+
+    patient = collection.find_one({"mrn": mrn})
+    if patient is None:
+        if "cpap_pressure" in data:
+            create_patient_cpap(
+                mrn, room_number,
+                data["cpap_pressure"],
+                data["apnea_count"],
+                data["breathing_rate"],
+                data["cpap_image"],
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                name=name
+            )
+        else:
+            create_patient(mrn, room_number, name)
+    else:
+        if name is not None:
+            update_patient_name(mrn, name)
+        if "cpap_pressure" in data:
+            update_cpap_data(
+                mrn,
+                data["cpap_pressure"],
+                data["apnea_count"],
+                data["breathing_rate"],
+                data["cpap_image"],
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+
+    return jsonify({"message": "Success"}), 200
 
 
 @app.route("/rooms", methods=['GET'])
