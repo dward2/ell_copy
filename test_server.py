@@ -1,7 +1,27 @@
 import pytest
 from server import app
 from mongo import collection
+from server import validate_server_mrn
 
+
+@pytest.fixture(autouse=True)
+def clean_db():
+    collection.delete_many({})
+    yield
+    collection.delete_many({})
+
+
+@pytest.mark.parametrize("mrn, expected", [
+    (123, True),
+    (0, True),
+    ("abc", "MRN must be an integer"),
+    ("123", "MRN must be an integer"),
+    (12.5, "MRN must be an integer"),
+    (None, "MRN must be an integer"),
+    ("123!", "MRN must be an integer"),
+])
+def test_validate_server_mrn(mrn, expected):
+    assert validate_server_mrn(mrn) == expected
 
 @pytest.fixture
 def client():
