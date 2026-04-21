@@ -106,3 +106,9 @@ def test_upload_processing_cpap():
     assert patient["cpap_data"][0]["pressure"] == 10
     assert patient["cpap_data"][0]["breathing_rate"] == 21
     assert patient["cpap_data"][0]["apnea_count"] == 3
+
+
+def test_upload_patient_route_success(client):
+    data = {"mrn": 123, "room_number": "101"}
+    r = client.post("/api/patient", json=data)
+    assert r.status_code == 200
