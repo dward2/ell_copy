@@ -112,7 +112,9 @@ def monitering_gui():
             clear_image1()
         else:
             # find new image file for patient + room
-            r = requests.get(server + "/cpap", params={"room": chosen_room.get(), "time": chosen_time.get()})
+            r = requests.get(server + "/cpap",
+                             params={"room": chosen_room.get(),
+                                     "time": chosen_time.get()})
             if r.status_code == 200:
                 filename = r.text
                 with Image.open(filename) as img:
@@ -133,7 +135,9 @@ def monitering_gui():
             clear_image2()
         else:
             # find new image file for patient + room
-            r = requests.get(server + "/cpap", params={"room": chosen_room.get(), "time": image2_time.get()})
+            r = requests.get(server + "/cpap",
+                             params={"room": chosen_room.get(),
+                                     "time": image2_time.get()})
             if r.status_code == 200:
                 filename = r.text
                 with Image.open(filename) as img:
@@ -170,7 +174,7 @@ def monitering_gui():
         )
         if file_path:
             current_img2.save(file_path)
-        
+
     def update_data():
         global current_img1
         global current_img2
@@ -252,12 +256,13 @@ def monitering_gui():
                                 font=("Helvetica", 10, "italic"))
     pressure_warning.grid(row=4, column=2, columnspan=2, sticky='w')
 
-    # Image 1 
-    cpap_image1 = tk.Label(root, text="Choose a Time", font=("Helvetica", 10, "italic"))
+    # images
+    cpap_image1 = tk.Label(root, text="Choose a Time",
+                           font=("Helvetica", 10, "italic"))
     cpap_image1.grid(row=6, column=0, columnspan=2, sticky='s')
 
-    # Image 2 
-    cpap_image2 = tk.Label(root, text="No recent CPAP", font=("Helvetica", 10, "italic"))
+    cpap_image2 = tk.Label(root, text="No recent CPAP",
+                           font=("Helvetica", 10, "italic"))
     cpap_image2.grid(row=6, column=2, columnspan=2, sticky='s')
 
     image1_time = tk.StringVar()
