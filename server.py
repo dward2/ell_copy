@@ -49,17 +49,18 @@ def new_pressure(p):
         return "invalid", 400
 
 
-def encode_image(image_bytes):
+def encode_image(image_file):
+    image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
+
 
 @app.route("/upload_image", methods=['POST'])
 def upload_image():
     file = request.files["file"]
-    image_bytes = file.read()
 
     # encode image to str
-    image_str = encode_image(image_bytes)
+    image_str = encode_image(file)
 
     # upload image here with mongo file
 
