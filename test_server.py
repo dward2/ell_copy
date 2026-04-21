@@ -3,6 +3,7 @@ from server import app
 from mongo import collection
 from server import validate_server_mrn
 from server import validate_server_rn
+from server import validate_server_name
 
 
 @pytest.fixture(autouse=True)
@@ -37,6 +38,22 @@ def test_validate_server_mrn(mrn, expected):
 ])
 def test_validate_server_rn(rn, expected):
     assert validate_server_rn(rn) == expected
+
+
+@pytest.mark.parametrize("name, expected", [
+    ("Nika Ilieva", True),
+    ("Ella Fortenbery", True),
+    ("Mary-Jane", True),
+    (" Nika Ilieva ", True),
+    ("", True),
+    ("   ", True),
+    (123, "Name must be a string"),
+    (None, "Name must be a string"),
+    ("John123", "Name contains invalid characters"),
+    ("John@Carter", "Name contains invalid characters"),
+])
+def test_validate_server_name(name, expected):
+    assert validate_server_name(name) == expected
 
 
 @pytest.fixture
