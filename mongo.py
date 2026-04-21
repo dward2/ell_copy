@@ -60,3 +60,19 @@ def update_cpap_data(mrn, pres, apnea, br, cpap_image, time):
         {"mrn": mrn},
         {"$push": {"cpap_data": cpap_entry}}
     )
+
+
+def get_room_list():
+    all_rooms = collection.distinct("room_number")
+    print(all_rooms)
+    return all_rooms
+
+
+def get_patient(room):
+    return collection.find_one({"room_number": room})
+
+
+def change_pressure(room, p):
+    patient = collection.find_one({"room_number": room})
+    if patient is not None:
+        collection.update_one({"room_number": room}, {"$set": {"pressure": p}})
