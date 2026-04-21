@@ -45,6 +45,7 @@ def test_upload_patient(client):
     r = client.post("/api/patient", json=data)
     assert r.status_code == 200
 
+
 def test_upload_patient_w_name(client):
     data = {
         "mrn": 321,
@@ -55,3 +56,26 @@ def test_upload_patient_w_name(client):
     assert r.status_code == 200
 
 
+def test_upload_patient_w_cpap(client):
+    data = {
+        "mrn": 304,
+        "room_number": "203",
+        "cpap_pressure": 10,
+        "breathing_rate": 21,
+        "apnea_count": 3
+    }
+    r = client.post("/api/patient", json=data)
+    assert r.status_code == 200
+
+
+def test_upload_patient_cpap_w_name(client):
+    data = {
+        "mrn": 304,
+        "room_number": "203",
+        "name": "Nika",
+        "cpap_pressure": 10,
+        "breathing_rate": 21,
+        "apnea_count": 3
+    }
+    r = client.post("/api/patient", json=data)
+    assert r.status_code == 200
