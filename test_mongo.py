@@ -1,7 +1,7 @@
 import pytest
 from pymongo import MongoClient
 from mongo import create_patient, create_patient_cpap, update_patient_name
-from mongo import update_cpap_data, get_room_list
+from mongo import update_cpap_data, get_room_list, get_patient, change_pressure
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
 client = MongoClient(uri, tlsAllowInvalidCertificates=True)
@@ -169,3 +169,49 @@ def test_get_room_list_empty():
     collection.delete_many({})
     rooms = get_room_list()
     assert rooms == []
+
+
+def test_get_patient():
+    collection.delete_many({})  # clean state
+    collection.insert_one({
+        "mrn": 123,
+        "name": "Nika",
+        "room_number": "A101"
+    })
+    patient = get_patient("A101")
+    assert patient is not None
+    assert patient["mrn"] == 123
+    assert patient["name"] == "Nika"
+    assert patient["room_number"] == "A101"
+
+
+def test_get_patient_not_found():
+    collection.delete_many({})  # ensure empty
+    patient = get_patient("Z999")
+    assert patient is None
+
+
+def test_change_pressure():
+    collection.delete_many({})  # clean state
+
+    # setup
+    collection.insert_one({
+        "mrn": 1,
+        "room_number": "A101",
+        "pressure": 5
+    })
+
+    # call function
+    change_pressure("A101", 10)
+
+    # verify
+    patient = collection.find_one({"room_number": "A101"})
+    assert patient is not None
+    assert patient["pressure"] == 10
+
+
+def test_change_pressure_no_patient():
+    collection.delete_many({})
+    change_pressure("Z999", 10)
+    patient = collection.find_one({"room_number": "Z999"})
+    assert patient is None
