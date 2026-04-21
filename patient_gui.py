@@ -7,6 +7,7 @@ from cpap_analysis import cpap_analysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import io
 import requests
+import base64
 
 # connect to server
 server = 'http://127.0.0.1:5000'
@@ -144,6 +145,11 @@ def apnea_color(ap):
         return "white"
 
 
+def encode_image(image_file):
+    image_bytes = image_file.read()
+    img_str = base64.b64encode(image_bytes).decode("utf-8")
+    return img_str
+
 def main_window():
 
     def name_enter():
@@ -257,10 +263,7 @@ def main_window():
         buf = io.BytesIO()
         fig.savefig(buf, format="png", bbox_inches="tight")
         buf.seek(0)
-        files = {
-            "file": ("plot.png", buf, "image/png")
-        }
-        requests.post(server + "/upload_image", files=files)
+        image_str.set(encode_image(buf))
 
         canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         canvas.draw()
@@ -278,6 +281,7 @@ def main_window():
         cpap_value.set("")
         br_value.set("")
         apnea_value.set("")
+        image_str.set("")
         apnea_display.config(fg="black")
 
         for widget in plot_frame.winfo_children():
@@ -319,6 +323,8 @@ def main_window():
             data["cpap_pressure"] = int(pres)
             data["breathing_rate"] = int(br_value.get())
             data["apnea_count"] = int(apnea_value.get())
+        if image_str.get():
+            data["image"] = image_str.get()
 
         print("Sending data:", data)
         r = requests.post(server + "/api/patient", json=data)
@@ -402,6 +408,7 @@ def main_window():
     frame = ttk.Frame(root, borderwidth=20, relief=tk.GROOVE)
     frame.grid(column=0, row=6, columnspan=5, pady=10)
 
+    image_str = tk.StringVar()
     plot_frame = tk.Frame(root)
     plot_frame.grid(column=0, row=8, columnspan=5, pady=10)
 
