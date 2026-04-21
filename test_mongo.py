@@ -94,6 +94,12 @@ def test_update_patient_name_replacement_cpap():
     assert patient["name"] == "Nika"
 
 
+def test_patient_name_nonexist():
+    update_patient_name(111, "Nika")
+    patient = collection.find_one({"mrn": 111})
+    assert patient is None
+
+
 def test_update_cpap_data():
     create_patient_cpap(
         123, "101", 10, 3, 21,
