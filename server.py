@@ -222,16 +222,18 @@ def get_rooms():
 
 @app.route("/patient/<room>", methods=["GET"])
 def get_patient_data_from_room(room):
-    # implement to get:
-    # name, mrn, apnea, breathing rate
-    # latest cpap image
-    # latest pressure
-    # list of cpap timestamps
-    print(room)
-    patient = {"name": f"ella {room}", "mrn": 1234, "cpap image": "image_str",
-               "times": ["mm/dd/yy 00:00", "01/30/04 00:00"], "pressure": 5,
-               "apnea": 3, "br": 4}
-    return jsonify(patient)
+    patient = get_patient(room)
+    if patient is None:
+        return "no patient in room", 400
+    display_patient = {"name": patient["name"],
+                       "mrn": patient['mrn'],
+                       "pressure": patient['pressure'],
+                       "br": patient['breathing_rate'],
+                       "apnea": patient['apnea_count'],
+                       "times": [entry["time"]
+                                 for entry in patient["cpap_data"]]
+                      }
+    return jsonify(display_patient), 200
 
 
 def decode_image(b64_string, filename):

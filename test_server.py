@@ -1,12 +1,13 @@
 import pytest
 from server import app
-from mongo import collection, create_patient, reset_db
+from mongo import collection, create_patient, create_patient_cpap, reset_db
 from server import validate_server_mrn
 from server import validate_server_rn
 from server import validate_server_name
 from server import validate_server_pressure
 from server import validate_server_cpap_data
 from server import validate_uploaded_data
+from server import get_rooms, get_patient_data_from_room
 
 
 @pytest.fixture(autouse=True)
@@ -260,3 +261,31 @@ def test_get_rooms_route(client):
     assert response.status_code == 200
     data = response.get_json()
     assert set(data) == {"101", "B202"}
+
+
+def test_get_patient_data_from_room_success(client):
+    reset_db()
+    create_patient_cpap(123, '101', 10, 2, 18, '', 4, 'Nika')
+
+    # call route
+    response = client.get("/patient/101")
+
+    # assertions
+    assert response.status_code == 200
+
+    data = response.get_json()
+    assert data == {
+        "name": "Nika",
+        "mrn": 123,
+        "pressure": 10,
+        "br": 18,
+        "apnea": 2,
+        "times": [4]
+    }
+
+
+def test_get_patient_data_from_room_not_found(client):
+    reset_db()
+    response = client.get("/patient/Z999")
+    assert response.status_code == 400
+    assert response.data.decode() == "no patient in room"
