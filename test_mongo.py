@@ -2,6 +2,7 @@ import pytest
 from pymongo import MongoClient
 from mongo import create_patient, create_patient_cpap, update_patient_name
 from mongo import update_cpap_data, get_room_list, get_patient, change_pressure
+from datetime import datetime
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
 client = MongoClient(uri, tlsAllowInvalidCertificates=True)
@@ -36,9 +37,9 @@ def test_create_patient_cpap():
     assert patient["name"] == "Nika"
     assert patient["room_number"] == "302"
     assert len(patient["cpap_data"]) == 1
-    assert patient["cpap_data"][0]["pressure"] == 10
-    assert patient["cpap_data"][0]["apnea_count"] == 3
-    assert patient["cpap_data"][0]["breathing_rate"] == 21
+    assert patient["pressure"] == 10
+    assert patient["apnea_count"] == 3
+    assert patient["breathing_rate"] == 21
 
 
 def test_patient_cpap_no_name():
@@ -51,9 +52,9 @@ def test_patient_cpap_no_name():
     patient = collection.find_one({"mrn": 200})
     assert len(patient["cpap_data"]) == 1
     assert patient["name"] is None
-    assert patient["cpap_data"][0]["pressure"] == 10
-    assert patient["cpap_data"][0]["apnea_count"] == 3
-    assert patient["cpap_data"][0]["breathing_rate"] == 21
+    assert patient["pressure"] == 10
+    assert patient["apnea_count"] == 3
+    assert patient["breathing_rate"] == 21
 
 
 def test_update_patient_name():
@@ -101,53 +102,38 @@ def test_patient_name_nonexist():
 
 
 def test_update_cpap_data():
-    create_patient_cpap(
-        123, "101", 10, 3, 21,
-        "image_1", "2026-04-21 14:00:00"
-    )
-    update_cpap_data(123, 15, 0, 18, "image_2",
-                     "2026-04-21 15:00:00")
-    patient = collection.find_one({"mrn": 123})
-    new_entry = patient["cpap_data"][1]
-    assert new_entry["pressure"] == 15
-    assert new_entry["apnea_count"] == 0
-    assert new_entry["breathing_rate"] == 18
-    assert new_entry["cpap_image"] == "image_2"
-    assert new_entry["timestamp"] == "2026-04-21 15:00:00"
+    create_patient(302, "101")
+    update_cpap_data(302, 10, 3, 21, "image1",
+                     "2026-04-21 14:00:00")
+    patient = collection.find_one({"mrn": 302})
+    assert patient["pressure"] == 10
+    assert patient["apnea_count"] == 3
+    assert patient["breathing_rate"] == 21
+    assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["time"] == "2026-04-21 14:00:00"
+    assert patient["cpap_data"][0]["image"] == "image1"
 
 
-def test_update_cpap_data_multiple_all_fields():
-    create_patient_cpap(
-        123, "101", 10, 3, 21,
-        "image1", "2026-04-21 14:00:00"
-    )
-    update_cpap_data(123, 15, 0, 18, "image2",
-                     "2026-04-21 15:00:00")
-    update_cpap_data(123, 20, 1, 16, "image3",
-                     "2026-04-21 16:00:00")
-    patient = collection.find_one({"mrn": 123})
-    assert len(patient["cpap_data"]) == 3
+def test_update_cpap_data_appends_history():
+    create_patient(302, "101")
 
-    first = patient["cpap_data"][0]
-    assert first["pressure"] == 10
-    assert first["apnea_count"] == 3
-    assert first["breathing_rate"] == 21
-    assert first["cpap_image"] == "image1"
-    assert first["timestamp"] == "2026-04-21 14:00:00"
+    t1 = datetime(2026, 4, 21, 14, 0)
+    t2 = datetime(2026, 4, 21, 15, 0)
+    t3 = datetime(2026, 4, 21, 16, 0)
 
-    second = patient["cpap_data"][1]
-    assert second["pressure"] == 15
-    assert second["apnea_count"] == 0
-    assert second["breathing_rate"] == 18
-    assert second["cpap_image"] == "image2"
-    assert second["timestamp"] == "2026-04-21 15:00:00"
+    update_cpap_data(302, 10, 3, 21, "image1", t1)
+    update_cpap_data(302, 15, 0, 18, "image2", t2)
+    update_cpap_data(302, 20, 1, 16, "image3", t3)
 
-    third = patient["cpap_data"][2]
-    assert third["pressure"] == 20
-    assert third["apnea_count"] == 1
-    assert third["breathing_rate"] == 16
-    assert third["cpap_image"] == "image3"
-    assert third["timestamp"] == "2026-04-21 16:00:00"
+    patient = collection.find_one({"mrn": 302})
+
+    times = [e["time"] for e in patient["cpap_data"]]
+
+    assert len(times) == 3
+    assert times == sorted(times)
+    assert times[0] == t1
+    assert times[1] == t2
+    assert times[2] == t3
 
 
 def test_get_room_list():

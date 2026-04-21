@@ -108,3 +108,10 @@ def test_check_required_fields(mrn, rn, expected):
 ])
 def test_apnea_color(count, expected):
     assert apnea_color(count) == expected
+
+
+def test_encode_image():
+    from server import encode_image
+    with open("test_image.jpg", "rb") as image_file:
+        b64str = encode_image(image_file)
+    assert b64str[0:20] == "/9j/4AAQSkZJRgABAQEA"
