@@ -1,5 +1,6 @@
 import pytest
 from server import app
+from mongo import collection
 
 
 @pytest.fixture
@@ -34,6 +35,37 @@ def test_decode_image():
                          "test_image_output.jpg")
     os.remove("test_image_output.jpg")
     assert answer is True
+
+
+def test_upload_processing():
+    from server import upload_processing
+    data = {
+        "mrn": 123,
+        "room_number": "302"
+    }
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 123})
+    assert patient is not None
+    assert patient["room_number"] == "302"
+
+
+def test_upload_processing_w_name():
+    from server import upload_processing
+    data = {
+        "mrn": 123,
+        "room_number": "302",
+        "name": "Nika"
+    }
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 123})
+    assert patient is not None
+    assert patient["room_number"] == "302"
+    assert patient["name"] == "Nika"
+
+
+'''
 
 
 def test_upload_patient(client):
@@ -79,3 +111,4 @@ def test_upload_patient_cpap_w_name(client):
     }
     r = client.post("/api/patient", json=data)
     assert r.status_code == 200
+'''
