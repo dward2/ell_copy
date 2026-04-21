@@ -14,14 +14,21 @@ def server_status():
     return "server is running"
 
 
-@app.route("/api/patient", methods=["POST"])
-def upload_patient():
-    data = request.get_json()
+def upload_processing(data):
+    '''Processes and stores patient data in
+    database.
+    Args:
+    data (dict): patient data containing mrn, room_number,
+        and optionally name and CPAP data.
+    Returns:
+        tuple: (message dict, status_code)
+    '''
     mrn = data["mrn"]
     room_number = data["room_number"]
     name = data.get("name", None)
     time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
     patient = collection.find_one({"mrn": mrn})
+
     if patient is None:
         if "cpap_pressure" in data:
             create_patient_cpap(
@@ -48,7 +55,14 @@ def upload_patient():
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             )
 
-    return jsonify({"message": "Success"}), 200
+    return {"message": "Success"}, 200
+
+
+@app.route("/api/patient", methods=["POST"])
+def upload_patient():
+    data = request.get_json()
+    message, status = upload_processing(data)
+    return jsonify(message), status
 
 
 @app.route("/rooms", methods=['GET'])
