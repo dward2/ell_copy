@@ -103,7 +103,7 @@ def monitering_gui():
             )
 
     def clear_image1():
-        cpap_image1.config(image="", text="Unknown")
+        cpap_image1.config(image="", text="Choose a Time")
         cpap_image1.image = None
 
     def display_image1():
@@ -123,10 +123,33 @@ def monitering_gui():
                 cpap_image1.image = img_tk
                 os.remove(filename)
 
+    def clear_image2():
+        cpap_image2.config(image="", text="No recent CPAP")
+        cpap_image2.image = None
+
+    def display_image2():
+        # call when new room is selected
+        if chosen_room.get() == "-":
+            clear_image2()
+        else:
+            # find new image file for patient + room
+            r = requests.get(server + "/cpap", params={"room": chosen_room.get(), "time": image2_time.get()})
+            if r.status_code == 200:
+                filename = r.text
+                with Image.open(filename) as img:
+                    pil_img = img.copy()
+                img_resized = pil_img.resize((200, 200))
+                img_tk = ImageTk.PhotoImage(img_resized)
+                cpap_image2.config(image=img_tk, text="")
+                cpap_image2.image = img_tk
+                os.remove(filename)
+            else:
+                clear_image2()
 
     def room_changed(*args):
         display_patient()
         change_times()
+        display_image2()
 
     def time_changed(*args):
         image1_time.set(chosen_time.get())
@@ -242,7 +265,7 @@ def monitering_gui():
     image1_label = tk.Label(root, textvariable=image1_time)
     image1_label.grid(row=7, column=0, columnspan=2)
 
-    recent_time = "Now"
+    recent_time = "-"
     image2_time = tk.StringVar()
     image2_time.set(recent_time)
     image2_label = tk.Label(root, textvariable=image2_time)
