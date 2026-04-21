@@ -200,9 +200,11 @@ def main_window():
         errors = check_required_fields(mrn_value.get(), rn_value.get())
         if errors:
             button_file.config(state=tk.DISABLED)
+            button_up.config(state=tk.DISABLED)
             status_value.set("\n".join(errors))
         else:
             button_file.config(state=tk.NORMAL)
+            button_up.config(state=tk.NORMAL)
             status_value.set("Ready to select CPAP file.")
 
     def check_reset(*args):
@@ -290,6 +292,43 @@ def main_window():
 
         status_value.set("Enter Patient Information Above")
 
+    def upload():
+        '''Uploads patient data to the server,
+        Locks MRN and room number after upload.
+        Requires MRN and room number and can
+        optionally upload CPAP and name data.
+        '''
+        errors = check_required_fields(
+            mrn_value.get(), rn_value.get()
+        )
+        if errors:
+            status_value.set("\n".join(errors))
+            return
+
+        data = {
+            "mrn": int(mrn_value.get().strip()),
+            "room_number": rn_value.get().strip(),
+        }
+
+        name = name_value.get().strip()
+        if name:
+            data["name"] = name
+
+        pres = cpap_value.get().strip()
+        if pres and apnea_value.get() and br_value.get():
+            data["cpap_pressure"] = int(pres)
+            data["breathing_rate"] = int(br_value.get())
+            data["apnea_count"] = int(apnea_value.get())
+
+        print("Sending data:", data)
+        r = requests.post(server + "/api/patient", json=data)
+        if r.status_code == 200:
+            mrn_entry.config(state=tk.DISABLED)
+            rn_entry.config(state=tk.DISABLED)
+            status_value.set("Successful Upload.")
+        else:
+            status_value.set("Upload Failed.")
+
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
@@ -340,7 +379,8 @@ def main_window():
     button_reset.grid(column=3, row=9, sticky=tk.W, padx=10)
 
     button_up = tk.Button(root, text="Upload",
-                          font=base_font, state=tk.DISABLED)
+                          font=base_font, state=tk.DISABLED,
+                          command=upload)
     button_up.grid(column=2, row=9, sticky=tk.W, padx=10)
 
     br_value = tk.StringVar()
