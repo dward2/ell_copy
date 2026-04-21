@@ -108,3 +108,37 @@ def test_update_cpap_data():
     assert new_entry["breathing_rate"] == 18
     assert new_entry["cpap_image"] == "image_2"
     assert new_entry["timestamp"] == "2026-04-21 15:00:00"
+
+
+def test_update_cpap_data_multiple_all_fields():
+    create_patient_cpap(
+        123, "101", 10, 3, 21,
+        "image1", "2026-04-21 14:00:00"
+    )
+    update_cpap_data(123, 15, 0, 18, "image2",
+                     "2026-04-21 15:00:00")
+    update_cpap_data(123, 20, 1, 16, "image3",
+                     "2026-04-21 16:00:00")
+    patient = collection.find_one({"mrn": 123})
+    assert len(patient["cpap_data"]) == 3
+
+    first = patient["cpap_data"][0]
+    assert first["pressure"] == 10
+    assert first["apnea_count"] == 3
+    assert first["breathing_rate"] == 21
+    assert first["cpap_image"] == "image1"
+    assert first["timestamp"] == "2026-04-21 14:00:00"
+
+    second = patient["cpap_data"][1]
+    assert second["pressure"] == 15
+    assert second["apnea_count"] == 0
+    assert second["breathing_rate"] == 18
+    assert second["cpap_image"] == "image2"
+    assert second["timestamp"] == "2026-04-21 15:00:00"
+
+    third = patient["cpap_data"][2]
+    assert third["pressure"] == 20
+    assert third["apnea_count"] == 1
+    assert third["breathing_rate"] == 16
+    assert third["cpap_image"] == "image3"
+    assert third["timestamp"] == "2026-04-21 16:00:00"
