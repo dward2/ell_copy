@@ -236,7 +236,7 @@ def main_window():
         status_value.set("CPAP data analyzed.")
 
     def cpap_plot(time_data, flow_data):
-        """Create and display a flow vs time plot in the GUI. 
+        """Create and display a flow vs time plot in the GUI.
         Upload plot to server.
         Args:
             time_data (list): time values in seconds.
