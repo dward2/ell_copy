@@ -15,8 +15,6 @@ def server_status():
 
 
 # validate mrn
-
-
 def validate_server_mrn(mrn):
     '''Validates MRN from server
     request.
@@ -30,7 +28,22 @@ def validate_server_mrn(mrn):
         return "MRN must be an integer"
     return True
 
+
 # validate rn
+def validate_server_rn(rn):
+    '''Validates RN from server
+    request.
+    Args:
+        rn: room number
+    Returns:
+        True if valid, error message if
+        invalid.
+    '''
+    if not isinstance(rn, str):
+        return "Room number must be a string"
+    if not rn.isdigit():
+        return "Room number must contain only digits"
+    return True
 
 # validate name
 
