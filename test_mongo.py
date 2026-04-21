@@ -1,6 +1,7 @@
 import pytest
 from pymongo import MongoClient
 from mongo import create_patient, create_patient_cpap, update_patient_name
+from mongo import update_cpap_data
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
 client = MongoClient(uri, tlsAllowInvalidCertificates=True)
@@ -91,3 +92,19 @@ def test_update_patient_name_replacement():
     update_patient_name(200, "Nika")
     patient = collection.find_one({"mrn": 200})
     assert patient["name"] == "Nika"
+
+
+def test_update_cpap_data():
+    create_patient_cpap(
+        123, "101", 10, 3, 21,
+        "image_1", "2026-04-21 14:00:00"
+    )
+    update_cpap_data(123, 15, 0, 18, "image_2",
+                     "2026-04-21 15:00:00")
+    patient = collection.find_one({"mrn": 123})
+    new_entry = patient["cpap_data"][1]
+    assert new_entry["pressure"] == 15
+    assert new_entry["apnea_count"] == 0
+    assert new_entry["breathing_rate"] == 18
+    assert new_entry["cpap_image"] == "image_2"
+    assert new_entry["timestamp"] == "2026-04-21 15:00:00"
