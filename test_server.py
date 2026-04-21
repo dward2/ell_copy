@@ -6,6 +6,7 @@ from server import validate_server_rn
 from server import validate_server_name
 from server import validate_server_pressure
 from server import validate_server_cpap_data
+from server import validate_uploaded_data
 
 
 @pytest.fixture(autouse=True)
@@ -89,6 +90,53 @@ def test_validate_server_pressure(pres, expected):
 ])
 def test_validate_server_cpap_data(br, apnea, expected):
     assert validate_server_cpap_data(br, apnea) == expected
+
+
+# !!!
+@pytest.mark.parametrize("data, expected", [
+    ({"mrn": 123, "room_number": "101"}, True),
+    ({"mrn": 123, "room_number": "101", "name": "Ella"}, True),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": 21, "apnea_count": 3}, True),
+    ("not a dict", "Invalid data format"),
+    ({}, "MRN is required"),
+    ({"mrn": 123}, "Room number is required"),
+    ({"mrn": "abc", "room_number": "101"},
+     "MRN must be an integer"),
+    ({"mrn": 123, "room_number": 101},
+     "Room number must be a string"),
+    ({"mrn": 123, "room_number": "abc"},
+     "Room number must contain only digits"),
+    ({"mrn": 123, "room_number": "101", "name": 123},
+     "Name must be a string"),
+    ({"mrn": 123, "room_number": "101", "name": "John123"},
+     "Name contains invalid characters"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": "abc"},
+     "CPAP pressure must be an integer"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 3},
+     "CPAP pressure must be between 4 and 25"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 26},
+     "CPAP pressure must be between 4 and 25"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10},
+     "Breathing rate required with CPAP pressure"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": 21},
+     "Apnea count required with CPAP pressure"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": "abc", "apnea_count": 3},
+     "Breathing rate must be an integer"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": 21, "apnea_count": "abc"},
+     "Apnea count must be an integer"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": -1, "apnea_count": 3},
+     "Breathing rate cannot be negative"),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+      "breathing_rate": 21, "apnea_count": -1},
+     "Apnea count cannot be negative"),
+])
+def test_validate_upload_data(data, expected):
+    assert validate_uploaded_data(data) == expected
 
 
 @pytest.fixture

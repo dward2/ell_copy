@@ -113,6 +113,53 @@ def validate_server_cpap_data(br, apnea):
     return True
 
 
+def validate_uploaded_data(data):
+    '''Validates incoming patient upload data.
+    Checks for required fields and validates
+    data types and values.
+    Args:
+        data (dict): the uploaded patient data.
+
+    Returns:
+        True if valid, or an error message string if invalid.
+    '''
+    if not isinstance(data, dict):
+        return "Invalid data format"
+    if "mrn" not in data:
+        return "MRN is required"
+    if "room_number" not in data:
+        return "Room number is required"
+
+    mrn_check = validate_server_mrn(data["mrn"])
+    if mrn_check is not True:
+        return mrn_check
+
+    rn_check = validate_server_rn(data["room_number"])
+    if rn_check is not True:
+        return rn_check
+
+    if "name" in data:
+        name_check = validate_server_name(data["name"])
+        if name_check is not True:
+            return name_check
+
+    if "cpap_pressure" in data:
+        pres_check = validate_server_pressure(data["cpap_pressure"])
+        if pres_check is not True:
+            return pres_check
+        if "breathing_rate" not in data:
+            return "Breathing rate required with CPAP pressure"
+        if "apnea_count" not in data:
+            return "Apnea count required with CPAP pressure"
+        cpap_check = validate_server_cpap_data(
+            data["breathing_rate"], data["apnea_count"]
+        )
+        if cpap_check is not True:
+            return cpap_check
+
+    return True
+
+
 def upload_processing(data):
     '''Processes and stores patient data in
     database.
