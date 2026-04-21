@@ -1,6 +1,7 @@
 import pytest
 from server import app
-from mongo import collection, create_patient, create_patient_cpap, reset_db
+from mongo import collection, create_patient, create_patient_cpap
+from mongo import get_patient, reset_db
 from server import validate_server_mrn
 from server import validate_server_rn
 from server import validate_server_name
@@ -153,13 +154,6 @@ def test_server_status(client):
     assert response.data.decode() == "server is running"
 
 
-def test_encode_image():
-    from server import encode_image
-    with open("test_image.jpg", "rb") as image_file:
-        b64str = encode_image(image_file)
-    assert b64str[0:20] == "/9j/4AAQSkZJRgABAQEA"
-
-
 def test_decode_image():
     from server import encode_image
     from server import decode_image
@@ -289,3 +283,57 @@ def test_get_patient_data_from_room_not_found(client):
     response = client.get("/patient/Z999")
     assert response.status_code == 400
     assert response.data.decode() == "no patient in room"
+
+
+def test_get_cpap_success(client):
+    from server import encode_image
+    reset_db()
+    # setup
+    with open("test_image.jpg", "rb") as image_file:
+        b64str = encode_image(image_file)
+    create_patient_cpap(123, 'A101', 10, 2, 18, cpap_image=b64str, time='t1', name='Nika')
+    response = client.get("/cpap?room=A101&time=t1")
+    assert response.status_code == 200
+    assert response.data.decode() == "cpap_A101_t1"
+
+
+def test_get_cpap_no_timestamp(client):
+    from server import encode_image
+    reset_db()
+
+    with open("test_image.jpg", "rb") as image_file:
+        b64str = encode_image(image_file)
+
+    create_patient_cpap(123, 'A101', 10, 2, 18, b64str, 't1', 'Nika')
+
+    response = client.get("/cpap?room=A101&time=bad_time")
+
+    assert response.status_code == 400
+    assert response.data.decode() == "no timestamp"
+
+
+def test_new_pressure_success(client):
+    reset_db()
+    create_patient_cpap(123, 'A101', 5, 2, 18, '', 't1', 'Nika')
+    response = client.post("/pressure", json={
+        "room": "A101",
+        "pressure": 10
+    })
+    assert response.status_code == 200
+    assert response.data.decode() == "pressure added"
+    # verify DB update
+    patient = get_patient('A101')
+    assert patient["pressure"] == 10
+
+
+def test_new_pressure_invalid(client):
+    reset_db()
+    create_patient_cpap(123, 'A101', 5, 2, 18, '', 't1', 'Nika')
+
+    response = client.post("/pressure", json={
+        "room": "A101",
+        "pressure": 100
+    })
+
+    assert response.status_code == 400
+    assert response.data.decode() == "invalid"
