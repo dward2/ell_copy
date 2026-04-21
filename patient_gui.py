@@ -203,6 +203,7 @@ def main_window():
             status_value.set("\n".join(errors))
         else:
             button_file.config(state=tk.NORMAL)
+            button_up.config(state=tk.NORMAL)
             status_value.set("Ready to select CPAP file.")
 
     def check_reset(*args):
