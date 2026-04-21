@@ -37,3 +37,12 @@ def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
         }],
     }
     collection.insert_one(new_patient)
+
+
+def update_patient_name(mrn, name):
+    patient = collection.find_one({"mrn": mrn})
+    if patient is not None:
+        collection.update_one(
+            {"mrn": mrn},
+            {"$set": {"name": name}}
+        )
