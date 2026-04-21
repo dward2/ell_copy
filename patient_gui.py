@@ -150,6 +150,7 @@ def encode_image(image_file):
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
 
+
 def main_window():
 
     def name_enter():
