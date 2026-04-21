@@ -46,3 +46,17 @@ def update_patient_name(mrn, name):
             {"mrn": mrn},
             {"$set": {"name": name}}
         )
+
+
+def update_cpap_data(mrn, pres, apnea, br, cpap_image, time):
+    cpap_entry = {
+        "pressure": pres,
+        "apnea_count": apnea,
+        "breathing_rate": br,
+        "cpap_image": cpap_image,
+        "timestamp": time
+    }
+    collection.update_one(
+        {"mrn": mrn},
+        {"$push": {"cpap_data": cpap_entry}}
+    )
