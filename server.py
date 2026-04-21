@@ -55,6 +55,13 @@ def encode_image(image_file):
     return img_str
 
 
+def decode_image(b64_string, filename):
+    image_bytes = base64.b64decode(b64_string)
+    with open(filename, "wb") as out_file:
+        out_file.write(image_bytes)
+    return None
+
+
 @app.route("/upload_image", methods=['POST'])
 def upload_image():
     file = request.files["file"]
