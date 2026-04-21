@@ -20,7 +20,7 @@ def upload_patient():
     mrn = data["mrn"]
     room_number = data["room_number"]
     name = data.get("name", None)
-
+    time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
     patient = collection.find_one({"mrn": mrn})
     if patient is None:
         if "cpap_pressure" in data:
@@ -29,8 +29,8 @@ def upload_patient():
                 data["cpap_pressure"],
                 data["apnea_count"],
                 data["breathing_rate"],
-                data["cpap_image"],
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "",
+                time,
                 name=name
             )
         else:
@@ -44,7 +44,7 @@ def upload_patient():
                 data["cpap_pressure"],
                 data["apnea_count"],
                 data["breathing_rate"],
-                data["cpap_image"],
+                "",
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             )
 
