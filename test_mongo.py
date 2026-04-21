@@ -32,7 +32,24 @@ def test_create_patient_cpap():
         name="Nika"
     )
     patient = collection.find_one({"mrn": 200})
+    assert patient["name"] == "Nika"
+    assert patient["room_number"] == "302"
     assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["pressure"] == 10
+    assert patient["cpap_data"][0]["apnea_count"] == 3
+    assert patient["cpap_data"][0]["breathing_rate"] == 21
+
+
+def test_patient_cpap_no_name():
+    create_patient_cpap(
+        200, "302", 10, 3, 21,
+        "base64_image",
+        "2026-04-21 14:00:00",
+        name=None
+    )
+    patient = collection.find_one({"mrn": 200})
+    assert len(patient["cpap_data"]) == 1
+    assert patient["name"] is None
     assert patient["cpap_data"][0]["pressure"] == 10
     assert patient["cpap_data"][0]["apnea_count"] == 3
     assert patient["cpap_data"][0]["breathing_rate"] == 21
