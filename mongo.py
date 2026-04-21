@@ -8,7 +8,7 @@ db = client["patient_db"]          # creates it if it doesn't exist
 collection = db["patient"]
 
 
-def create_patient(mrn, rn):
+def create_patient(mrn, rn, name=None):
     '''Creates a new patient record in the
     database with only the required fields.
     Args:
