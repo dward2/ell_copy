@@ -21,6 +21,7 @@ def test_encode_image():
         b64str = encode_image(image_file)
     assert b64str[0:20] == "/9j/4AAQSkZJRgABAQEA"
 
+
 def test_decode_image():
     from server import encode_image
     from server import decode_image
@@ -32,4 +33,4 @@ def test_decode_image():
     answer = filecmp.cmp("test_image.jpg",
                          "test_image_output.jpg")
     os.remove("test_image_output.jpg")
-    assert answer == True
+    assert answer is True
