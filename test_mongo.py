@@ -56,7 +56,19 @@ def test_patient_cpap_no_name():
 
 
 def test_update_patient_name():
-    create_patient(321, "423")
+    create_patient(321, "423", name=None)
     update_patient_name(321, "Nika")
     patient = collection.find_one({"mrn": 321})
+    assert patient["name"] == "Nika"
+
+
+def test_update_patient_name_cpap():
+    create_patient_cpap(
+        200, "302", 10, 3, 21,
+        "base64_image",
+        "2026-04-21 14:00:00",
+        name=None
+    )
+    update_patient_name(200, "Nika")
+    patient = collection.find_one({"mrn": 200})
     assert patient["name"] == "Nika"
