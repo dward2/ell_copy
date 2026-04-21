@@ -34,3 +34,24 @@ def test_decode_image():
                          "test_image_output.jpg")
     os.remove("test_image_output.jpg")
     assert answer is True
+
+
+def test_upload_patient(client):
+    from server import upload_patient
+    data = {
+        "mrn": 123,
+        "room_number": "302"
+    }
+    r = client.post("/api/patient", json=data)
+    assert r.status_code == 200
+
+def test_upload_patient_w_name(client):
+    data = {
+        "mrn": 321,
+        "room_number": "303",
+        "name": "Nika"
+    }
+    r = client.post("/api/patient", json=data)
+    assert r.status_code == 200
+
+
