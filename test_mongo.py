@@ -2,6 +2,7 @@ import pytest
 from pymongo import MongoClient
 from mongo import create_patient, create_patient_cpap, update_patient_name
 from mongo import update_cpap_data, get_room_list, get_patient, change_pressure
+from mongo import reset_db
 from datetime import datetime
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
@@ -201,3 +202,7 @@ def test_change_pressure_no_patient():
     change_pressure("Z999", 10)
     patient = collection.find_one({"room_number": "Z999"})
     assert patient is None
+
+def test_reset_db():
+    reset_db()
+    assert collection.count_documents({}) == 0
