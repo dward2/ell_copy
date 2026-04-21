@@ -291,7 +291,8 @@ def test_get_cpap_success(client):
     # setup
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
-    create_patient_cpap(123, 'A101', 10, 2, 18, cpap_image=b64str, time='t1', name='Nika')
+    create_patient_cpap(123, 'A101', 10, 2, 18, cpap_image=b64str,
+                        time='t1', name='Nika')
     response = client.get("/cpap?room=A101&time=t1")
     assert response.status_code == 200
     assert response.data.decode() == "cpap_A101_t1"

@@ -288,4 +288,3 @@ def monitering_gui():
 
 if __name__ == "__main__":
     monitering_gui()
-

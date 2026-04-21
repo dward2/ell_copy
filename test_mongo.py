@@ -203,6 +203,7 @@ def test_change_pressure_no_patient():
     patient = collection.find_one({"room_number": "Z999"})
     assert patient is None
 
+
 def test_reset_db():
     reset_db()
     assert collection.count_documents({}) == 0

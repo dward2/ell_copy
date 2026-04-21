@@ -219,7 +219,6 @@ def get_rooms():
     return jsonify(rooms), 200
 
 
-
 @app.route("/patient/<room>", methods=["GET"])
 def get_patient_data_from_room(room):
     patient = get_patient(room)
@@ -230,9 +229,11 @@ def get_patient_data_from_room(room):
                        "pressure": patient['pressure'],
                        "br": patient['breathing_rate'],
                        "apnea": patient['apnea_count'],
-                       "times": [entry["time"]
-                                 for entry in patient["cpap_data"]]
-                      }
+                       "times": [
+                            entry["time"]
+                            for entry in patient["cpap_data"]
+                                ]
+                       }
     return jsonify(display_patient), 200
 
 
@@ -273,6 +274,12 @@ def new_pressure():
         return "pressure added", 200
     else:
         return "invalid", 400
+
+
+def encode_image(image_file):
+    image_bytes = image_file.read()
+    img_str = base64.b64encode(image_bytes).decode("utf-8")
+    return img_str
 
 
 if __name__ == "__main__":
