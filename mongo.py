@@ -60,3 +60,9 @@ def update_cpap_data(mrn, pres, apnea, br, cpap_image, time):
         {"mrn": mrn},
         {"$push": {"cpap_data": cpap_entry}}
     )
+
+
+def get_room_list():
+    all_rooms = collection.distinct("room_number")
+    print(all_rooms)
+    return all_rooms

@@ -1,7 +1,7 @@
 import pytest
 from pymongo import MongoClient
 from mongo import create_patient, create_patient_cpap, update_patient_name
-from mongo import update_cpap_data
+from mongo import update_cpap_data, get_room_list
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
 client = MongoClient(uri, tlsAllowInvalidCertificates=True)
@@ -148,3 +148,24 @@ def test_update_cpap_data_multiple_all_fields():
     assert third["breathing_rate"] == 16
     assert third["cpap_image"] == "image3"
     assert third["timestamp"] == "2026-04-21 16:00:00"
+
+
+def test_get_room_list():
+    collection.delete_many({})  # clean slate
+
+    collection.insert_many([
+        {"mrn": 1, "room_number": "A101"},
+        {"mrn": 2, "room_number": "B202"},
+        {"mrn": 3, "room_number": "A101"},
+    ])
+
+    rooms = get_room_list()
+
+    assert set(rooms) == {"A101", "B202"}
+
+
+def test_get_room_list_empty():
+    # ensure collection is empty
+    collection.delete_many({})
+    rooms = get_room_list()
+    assert rooms == []
