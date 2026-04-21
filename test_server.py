@@ -4,6 +4,7 @@ from mongo import collection
 from server import validate_server_mrn
 from server import validate_server_rn
 from server import validate_server_name
+from server import validate_server_pressure
 
 
 @pytest.fixture(autouse=True)
@@ -54,6 +55,22 @@ def test_validate_server_rn(rn, expected):
 ])
 def test_validate_server_name(name, expected):
     assert validate_server_name(name) == expected
+
+
+@pytest.mark.parametrize("pres, expected", [
+    (4, True),
+    (15, True),
+    (25, True),
+    ("abc", "CPAP pressure must be an integer"),
+    ("10", "CPAP pressure must be an integer"),
+    (12.5, "CPAP pressure must be an integer"),
+    (None, "CPAP pressure must be an integer"),
+    (3, "CPAP pressure must be between 4 and 25"),
+    (26, "CPAP pressure must be between 4 and 25"),
+    (0, "CPAP pressure must be between 4 and 25"),
+])
+def test_validate_server_pressure(pres, expected):
+    assert validate_server_pressure(pres) == expected
 
 
 @pytest.fixture

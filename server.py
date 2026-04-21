@@ -71,8 +71,23 @@ def validate_server_name(name):
             return "Name contains invalid characters"
     return True
 
-# validate pressure
 
+# validate pressure
+def validate_server_pressure(pres):
+    '''Validates CPAP pressure from server request.
+    Checks that the pressure is an integer, and
+    is between 4 and 25.
+    Args:
+        pres: the pressure value to validate.
+    Returns:
+        True if valid, or an error message string.
+
+    '''
+    if not isinstance(pres, int):
+        return "CPAP pressure must be an integer"
+    if pres < 4 or pres > 25:
+        return "CPAP pressure must be between 4 and 25"
+    return True
 # validate cpap data
 
 
