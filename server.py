@@ -45,7 +45,31 @@ def validate_server_rn(rn):
         return "Room number must contain only digits"
     return True
 
+
 # validate name
+def validate_server_name(name):
+    '''Validates patient name from
+    server request. Makes sure it
+    is a string. Allows dashes but
+    no other special characters.
+    Allows empty string.
+    Args:
+        name: the name value to validate.
+    Returns:
+        True if valid, or an error message string.
+    '''
+    if not isinstance(name, str):
+        return "Name must be a string"
+    for c in name.strip():
+        if c.isalpha():
+            continue
+        elif c == " ":
+            continue
+        elif c == "-":
+            continue
+        else:
+            return "Name contains invalid characters"
+    return True
 
 # validate pressure
 
