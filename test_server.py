@@ -198,7 +198,7 @@ def test_upload_processing_w_name():
     patient = collection.find_one({"mrn": 123})
     assert patient is not None
     assert patient["room_number"] == "302"
-    # assert patient["name"] == "Nika"
+    assert patient["name"] == "Nika"
 
 
 def test_upload_processing_cpap():
@@ -217,9 +217,9 @@ def test_upload_processing_cpap():
     assert patient["room_number"] == "203"
     assert patient["name"] == "Nika"
     assert len(patient["cpap_data"]) == 1
-    assert patient["cpap_data"][0]["pressure"] == 10
-    assert patient["cpap_data"][0]["breathing_rate"] == 21
-    assert patient["cpap_data"][0]["apnea_count"] == 3
+    assert patient["pressure"] == 10
+    assert patient["breathing_rate"] == 21
+    assert patient["apnea_count"] == 3
 
 
 def test_upload_processing_cpap():
@@ -239,9 +239,9 @@ def test_upload_processing_cpap():
     assert patient["room_number"] == "203"
     assert patient["name"] == "Nika"
     assert len(patient["cpap_data"]) == 1
-    assert patient["cpap_data"][0]["pressure"] == 10
-    assert patient["cpap_data"][0]["breathing_rate"] == 21
-    assert patient["cpap_data"][0]["apnea_count"] == 3
+    assert patient["pressure"] == 10
+    assert patient["breathing_rate"] == 21
+    assert patient["apnea_count"] == 3
 
 
 def test_upload_patient_route_success(client):

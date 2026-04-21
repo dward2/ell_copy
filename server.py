@@ -172,7 +172,8 @@ def upload_processing(data):
     mrn = data["mrn"]
     room_number = data["room_number"]
     name = data.get("name", None)
-    time = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
+    time = datetime.now()
+    image_str = data.get("image")
     patient = collection.find_one({"mrn": mrn})
 
     if patient is None:
@@ -182,7 +183,7 @@ def upload_processing(data):
                 data["cpap_pressure"],
                 data["apnea_count"],
                 data["breathing_rate"],
-                "",
+                image_str,
                 time,
                 name=name
             )
@@ -197,8 +198,8 @@ def upload_processing(data):
                 data["cpap_pressure"],
                 data["apnea_count"],
                 data["breathing_rate"],
-                "",
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                data["image"],
+                datetime.now()
             )
 
     return {"message": "Success"}, 200
