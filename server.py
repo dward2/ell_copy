@@ -29,10 +29,27 @@ def get_patient_data_from_room(room):
     return jsonify(patient)
 
 
-@app.route("/cpap/<time>", methods=["GET"])
-def get_cpap_from_time(time):
+def decode_image(b64_string, filename):
+    image_bytes = base64.b64decode(b64_string)
+    with open(filename, "wb") as out_file:
+        out_file.write(image_bytes)
+    return None
+
+
+@app.route("/cpap", methods=["GET"])
+def get_cpap_from_time():
     # implement to get the cpap image string at specific time
-    return "img_str"
+    room = request.args.get("room")
+    time = request.args.get("time")
+    if time == "mm/dd/yy 00:00":
+        with open("cpap1.png", "rb") as image_file:
+            image_str = encode_image(image_file)  # get from mongo here
+    if time == "01/30/04 00:00":
+        with open("cpap2.png", "rb") as image_file:
+            image_str = encode_image(image_file)  # get from mongo here
+    filename = "cpap" + '_' + room + '_' + time.replace('/', '.')
+    decode_image(image_str, filename)
+    return filename, 200
 
 
 @app.route("/pressure/<p>", methods=["POST"])

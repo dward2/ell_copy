@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import requests
+import os
 
 # connect to server
 server = 'http://127.0.0.1:5000'
@@ -101,12 +102,62 @@ def monitering_gui():
                 command=tk._setit(chosen_time, t)
             )
 
+    def clear_image1():
+        cpap_image1.config(image="", text="Choose a Time")
+        cpap_image1.image = None
+
+    def display_image1():
+        # call when new time is selected
+        if chosen_time.get() == "-":
+            clear_image1()
+        else:
+            # find new image file for patient + room
+            r = requests.get(server + "/cpap",
+                             params={"room": chosen_room.get(),
+                                     "time": chosen_time.get()})
+            if r.status_code == 200:
+                filename = r.text
+                with Image.open(filename) as img:
+                    pil_img = img.copy()
+                img_resized = pil_img.resize((200, 200))
+                img_tk = ImageTk.PhotoImage(img_resized)
+                cpap_image1.config(image=img_tk, text="")
+                cpap_image1.image = img_tk
+                os.remove(filename)
+
+    def clear_image2():
+        cpap_image2.config(image="", text="No recent CPAP")
+        cpap_image2.image = None
+
+    def display_image2():
+        # call when new room is selected
+        if chosen_room.get() == "-":
+            clear_image2()
+        else:
+            # find new image file for patient + room
+            r = requests.get(server + "/cpap",
+                             params={"room": chosen_room.get(),
+                                     "time": image2_time.get()})
+            if r.status_code == 200:
+                filename = r.text
+                with Image.open(filename) as img:
+                    pil_img = img.copy()
+                img_resized = pil_img.resize((200, 200))
+                img_tk = ImageTk.PhotoImage(img_resized)
+                cpap_image2.config(image=img_tk, text="")
+                cpap_image2.image = img_tk
+                os.remove(filename)
+            else:
+                clear_image2()
+
     def room_changed(*args):
         display_patient()
         change_times()
+        display_image2()
 
     def time_changed(*args):
         image1_time.set(chosen_time.get())
+        display_image1()
 
     def save_file1():
         global current_img1
@@ -129,10 +180,9 @@ def monitering_gui():
         global current_img2
 
         update_rooms()
-        display_patient()
-        add_times()
-        current_img1 = img_open1
-        current_img2 = img_open2
+        if chosen_room.get() != "-":
+            display_patient()
+            add_times()
         root.after(30000, update_data)
 
     initial_root = tk.Tk()
@@ -206,19 +256,13 @@ def monitering_gui():
                                 font=("Helvetica", 10, "italic"))
     pressure_warning.grid(row=4, column=2, columnspan=2, sticky='w')
 
-    # display cpap images:
-    img_open1 = Image.open("cpap1.png")
-    img_resized1 = img_open1.resize((200, 200))
-    img_tk1 = ImageTk.PhotoImage(img_resized1)
-    cpap_image1 = tk.Label(root, image=img_tk1)
-    cpap_image1.image = img_tk1
+    # images
+    cpap_image1 = tk.Label(root, text="Choose a Time",
+                           font=("Helvetica", 10, "italic"))
     cpap_image1.grid(row=6, column=0, columnspan=2, sticky='s')
 
-    img_open2 = Image.open("cpap2.png")
-    img_resized2 = img_open2.resize((200, 200))
-    img_tk2 = ImageTk.PhotoImage(img_resized2)
-    cpap_image2 = tk.Label(root, image=img_tk2)
-    cpap_image2.image = img_tk2
+    cpap_image2 = tk.Label(root, text="No recent CPAP",
+                           font=("Helvetica", 10, "italic"))
     cpap_image2.grid(row=6, column=2, columnspan=2, sticky='s')
 
     image1_time = tk.StringVar()
@@ -226,7 +270,7 @@ def monitering_gui():
     image1_label = tk.Label(root, textvariable=image1_time)
     image1_label.grid(row=7, column=0, columnspan=2)
 
-    recent_time = "Now"
+    recent_time = "-"
     image2_time = tk.StringVar()
     image2_time.set(recent_time)
     image2_label = tk.Label(root, textvariable=image2_time)
