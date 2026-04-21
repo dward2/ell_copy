@@ -14,6 +14,31 @@ def server_status():
     return "server is running"
 
 
+# validate mrn
+
+
+def validate_server_mrn(mrn):
+    '''Validates MRN from server
+    request.
+    Args:
+        mrn: medical record number
+    Returns:
+        True if valid, error message if
+        invalid.
+    '''
+    if not isinstance(mrn, int):
+        return "MRN must be an integer"
+    return True
+
+# validate rn
+
+# validate name
+
+# validate pressure
+
+# validate cpap data
+
+
 def upload_processing(data):
     '''Processes and stores patient data in
     database.
