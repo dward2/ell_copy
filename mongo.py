@@ -20,3 +20,20 @@ def create_patient(mrn, rn):
         "room_number": rn,
     }
     collection.insert_one(new_patient)
+
+
+def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
+
+    new_patient = {
+        "name": name,
+        "mrn": mrn,
+        "room_number": rn,
+        "cpap_data": [{
+            "pressure": pres,
+            "apnea_count": apnea,
+            "breathing_rate": br,
+            "cpap_image": cpap_image,
+            "timestamp": time
+        }],
+    }
+    collection.insert_one(new_patient)
