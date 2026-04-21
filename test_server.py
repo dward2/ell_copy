@@ -65,50 +65,44 @@ def test_upload_processing_w_name():
     assert patient["name"] == "Nika"
 
 
-'''
-
-
-def test_upload_patient(client):
-    from server import upload_patient
+def test_upload_processing_cpap():
+    from server import upload_processing
     data = {
-        "mrn": 123,
-        "room_number": "302"
+        "mrn": 304,
+        "room_number": "203",
+        "cpap_pressure": 10,
+        "breathing_rate": 21,
+        "apnea_count": 3
     }
-    r = client.post("/api/patient", json=data)
-    assert r.status_code == 200
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 304})
+    assert patient is not None
+    assert patient["room_number"] == "203"
+    assert patient["name"] == "Nika"
+    assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["pressure"] == 10
+    assert patient["cpap_data"][0]["breathing_rate"] == 21
+    assert patient["cpap_data"][0]["apnea_count"] == 3
 
 
-def test_upload_patient_w_name(client):
+def test_upload_processing_cpap():
+    from server import upload_processing
     data = {
-        "mrn": 321,
-        "room_number": "303",
+        "mrn": 304,
+        "room_number": "203",
+        "cpap_pressure": 10,
+        "breathing_rate": 21,
+        "apnea_count": 3,
         "name": "Nika"
     }
-    r = client.post("/api/patient", json=data)
-    assert r.status_code == 200
-
-
-def test_upload_patient_w_cpap(client):
-    data = {
-        "mrn": 304,
-        "room_number": "203",
-        "cpap_pressure": 10,
-        "breathing_rate": 21,
-        "apnea_count": 3
-    }
-    r = client.post("/api/patient", json=data)
-    assert r.status_code == 200
-
-
-def test_upload_patient_cpap_w_name(client):
-    data = {
-        "mrn": 304,
-        "room_number": "203",
-        "name": "Nika",
-        "cpap_pressure": 10,
-        "breathing_rate": 21,
-        "apnea_count": 3
-    }
-    r = client.post("/api/patient", json=data)
-    assert r.status_code == 200
-'''
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 304})
+    assert patient is not None
+    assert patient["room_number"] == "203"
+    assert patient["name"] == "Nika"
+    assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["pressure"] == 10
+    assert patient["cpap_data"][0]["breathing_rate"] == 21
+    assert patient["cpap_data"][0]["apnea_count"] == 3
