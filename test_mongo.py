@@ -82,7 +82,7 @@ def test_update_patient_name_replacement():
     assert patient["name"] == "Nika"
 
 
-def test_update_patient_name_replacement():
+def test_update_patient_name_replacement_cpap():
     create_patient_cpap(
         200, "302", 10, 3, 21,
         "base64_image",
