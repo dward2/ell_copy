@@ -5,6 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from cpap_analysis import cpap_analysis
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import io
+import requests
+
+# connect to server
+server = 'http://127.0.0.1:5000'
 
 base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
@@ -231,7 +236,7 @@ def main_window():
         status_value.set("CPAP data analyzed.")
 
     def cpap_plot(time_data, flow_data):
-        """Create and display a flow vs time plot in the GUI.
+        """Create and display a flow vs time plot in the GUI. Upload plot to server.
         Args:
             time_data (list): time values in seconds.
             flow_data (list): flow rate values.
@@ -244,6 +249,15 @@ def main_window():
         ax.set_xlabel("Time (s)")
         ax.set_ylabel("Flow Rate (L/s)")
         ax.set_title("Flow vs Time")
+
+        # upload image to server as bytes
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", bbox_inches="tight")
+        buf.seek(0)
+        files = {
+            "file": ("plot.png", buf, "image/png")
+        }
+        requests.post(server + "/upload_image", files=files)
 
         canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         canvas.draw()
