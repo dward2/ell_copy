@@ -2,6 +2,7 @@ import pytest
 from server import app
 from mongo import collection
 from server import validate_server_mrn
+from server import validate_server_rn
 
 
 @pytest.fixture(autouse=True)
@@ -22,6 +23,20 @@ def clean_db():
 ])
 def test_validate_server_mrn(mrn, expected):
     assert validate_server_mrn(mrn) == expected
+
+
+@pytest.mark.parametrize("rn, expected", [
+    ("101", True),
+    ("1", True),
+    (101, "Room number must be a string"),
+    ("abc", "Room number must contain only digits"),
+    ("13a", "Room number must contain only digits"),
+    ("17.5", "Room number must contain only digits"),
+    (None, "Room number must be a string"),
+    (12.5, "Room number must be a string"),
+])
+def test_validate_server_rn(rn, expected):
+    assert validate_server_rn(rn) == expected
 
 
 @pytest.fixture
