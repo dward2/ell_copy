@@ -1,6 +1,6 @@
 import pytest
 from pymongo import MongoClient
-from mongo import create_patient
+from mongo import create_patient, create_patient_cpap
 
 uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
 client = MongoClient(uri, tlsAllowInvalidCertificates=True)
@@ -22,3 +22,17 @@ def test_create_patient():
     assert patient is not None
     assert patient["mrn"] == 30
     assert patient["room_number"] == "101"
+
+
+def test_create_patient_cpap():
+    create_patient_cpap(
+        200, "302", 10, 3, 21,
+        "base64_image",
+        "2026-04-21 14:00:00",
+        name="Nika"
+    )
+    patient = collection.find_one({"mrn": 200})
+    assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["pressure"] == 10
+    assert patient["cpap_data"][0]["apnea_count"] == 3
+    assert patient["cpap_data"][0]["breathing_rate"] == 21
