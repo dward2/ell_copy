@@ -1,6 +1,6 @@
 import pytest
 from server import app
-from mongo import collection
+from mongo import collection, create_patient, reset_db
 from server import validate_server_mrn
 from server import validate_server_rn
 from server import validate_server_name
@@ -248,3 +248,15 @@ def test_upload_patient_route_success(client):
     data = {"mrn": 123, "room_number": "101"}
     r = client.post("/api/patient", json=data)
     assert r.status_code == 200
+
+
+def test_get_rooms_route(client):
+    # setup: clear + insert test data
+    reset_db()
+    create_patient('123', '101', 'ella',)
+    create_patient('456', 'B202', 'nika')
+    # call route
+    response = client.get("/rooms")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert set(data) == {"101", "B202"}

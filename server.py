@@ -4,6 +4,7 @@ import base64
 from pymongo import MongoClient
 from mongo import collection, create_patient, update_patient_name
 from mongo import create_patient_cpap, update_cpap_data
+from mongo import get_room_list, get_patient, reset_db
 from datetime import datetime
 
 app = Flask(__name__)
@@ -214,7 +215,9 @@ def upload_patient():
 
 @app.route("/rooms", methods=['GET'])
 def get_rooms():
-    return jsonify([100, 200, 300])
+    rooms = get_room_list()
+    return jsonify(rooms), 200
+
 
 
 @app.route("/patient/<room>", methods=["GET"])
