@@ -41,10 +41,15 @@ def get_cpap_from_time():
     # implement to get the cpap image string at specific time
     room = request.args.get("room")
     time = request.args.get("time")
-    image_str = None  # get from mongo here
-    filename = "cpap" + '_' + room + '_' + time
+    if time == "mm/dd/yy 00:00":
+        with open("cpap1.png", "rb") as image_file:
+            image_str = encode_image(image_file)  # get from mongo here
+    if time == "01/30/04 00:00":
+        with open("cpap2.png", "rb") as image_file:
+            image_str = encode_image(image_file)  # get from mongo here
+    filename = "cpap" + '_' + room + '_' + time.replace('/', '.')
     decode_image(image_str, filename)
-    return filename
+    return filename, 200
 
 
 @app.route("/pressure/<p>", methods=["POST"])
