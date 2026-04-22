@@ -164,6 +164,8 @@ def monitering_gui():
         if chosen_room.get() == "-":
             clear_image1()
             clear_image2()
+            a_data.set('-')
+            p_data.set("Select a room to see a patient's information")
             return
         display_patient()
         change_times()
@@ -194,10 +196,12 @@ def monitering_gui():
             current_img2.save(file_path)
 
     def update_data():
+        global current_patient
         update_rooms()
         if chosen_room.get() != "-":
             display_patient()
             change_times()
+
         root.after(10000, update_data)
 
     initial_root = tk.Tk()
