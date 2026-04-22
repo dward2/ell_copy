@@ -8,6 +8,7 @@ db = client["patient_db"]          # creates it if it doesn't exist
 collection = db["patient"]
 collection.create_index("room_number", unique=True)
 
+
 def create_patient(mrn, rn, name=None):
     '''Create a new patient record in the
     database with only the required fields.

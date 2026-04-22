@@ -162,51 +162,6 @@ def validate_uploaded_data(data):
     return True
 
 
-# def upload_processing(data):
-#     '''Processes and stores patient data in
-#     database.
-#     Args:
-#     data (dict): patient data containing mrn, room_number,
-#         and optionally name and CPAP data.
-#     Returns:
-#         tuple: (message dict, status_code)
-#     '''
-#     mrn = data["mrn"]
-#     room_number = data["room_number"]
-#     name = data.get("name", None)
-#     time = datetime.now()
-#     image_str = data.get("image")
-#     patient = collection.find_one({"mrn": mrn})
-#     pressure = data.get("cpap_pressure")
-#     print(type(mrn), mrn)
-#     print(patient)
-#     if patient is None:
-#         if "cpap_pressure" in data:
-#             create_patient(
-#                 mrn,
-#                 room_number,
-#                 name=name
-#             )
-#             change_pressure(room_number, pressure)
-#         if "image" in data:
-#             create_patient_cpap(mrn, room_number, data.get('apnea_count'), data.get("breathing_rate"), image_str, time, name)
-#         else:
-#             create_patient(mrn, room_number, name)
-#     else:
-#         if name is not None:
-#             update_patient_name(mrn, name)
-#         if pressure is not None:
-#             change_pressure(room_number, pressure)
-#         if image_str is not None:
-#             update_cpap_data(
-#                 mrn,
-#                 data["apnea_count"],
-#                 data["breathing_rate"],
-#                 data["image"],
-#                 datetime.now()
-#             )
-
-#     return {"message": "Success"}, 200
 def upload_processing(data):
     mrn = data["mrn"]
     room = data["room_number"]
@@ -240,6 +195,7 @@ def upload_processing(data):
         append_cpap_data(room, apnea, br, image, now)
 
     return {"message": "Success"}, 200
+
 
 @app.route("/api/patient", methods=["POST"])
 def upload_patient():

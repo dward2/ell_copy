@@ -159,15 +159,15 @@ def clear_fields():
     dict: empty values for each field.
     '''
     return {
-    "name": "",
-    "mrn": "",
-    "rn": "",
-    "cpap": "",
-    "br": "",
-    "apnea": "",
-    "image": "",
-    "apnea_color": "black",
-    "status": "Enter Patient Information Above"
+        "name": "",
+        "mrn": "",
+        "rn": "",
+        "cpap": "",
+        "br": "",
+        "apnea": "",
+        "image": "",
+        "apnea_color": "black",
+        "status": "Enter Patient Information Above"
     }
 
 
@@ -363,7 +363,6 @@ def main_window():
             status_value.set("Successful Upload.")
         else:
             status_value.set("Upload Failed.")
-
 
     def data_query():
         '''Send query every 30 seconds to
