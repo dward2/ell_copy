@@ -12,6 +12,12 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET'])
 def server_status():
+    """
+    Check server health/status.
+
+    Returns:
+        str: Simple message indicating the server is running.
+    """
     return "server is running"
 
 
@@ -205,6 +211,14 @@ def upload_processing(data):
 
 @app.route("/api/patient", methods=["POST"])
 def upload_patient():
+    """
+    API endpoint to upload patient data.
+
+    Validates incoming JSON and stores it in the database.
+
+    Returns:
+        JSON response with status message and HTTP status code.
+    """
     data = request.get_json()
     validate = validate_uploaded_data(data)
     if validate is not True:
@@ -215,16 +229,42 @@ def upload_patient():
 
 @app.route("/rooms", methods=['GET'])
 def get_rooms():
+    """
+    Retrieve list of active room numbers.
+
+    Returns:
+        JSON list of room numbers and HTTP 200 status.
+    """
     rooms = get_room_list()
     return jsonify(rooms), 200
 
 
 def format_time(dt):
+    """
+    Format datetime object into display string.
+
+    Args:
+        dt (datetime): Datetime object.
+
+    Returns:
+        str: Formatted time string (MM/DD/YY HH:MM:SS).
+    """
     return dt.strftime("%m/%d/%y %H:%M:%S")
 
 
 @app.route("/patient/<room>", methods=["GET"])
 def get_patient_data_from_room(room):
+    """
+    Retrieve patient data for a given room.
+
+    Includes patient info and sorted CPAP timestamps.
+
+    Args:
+        room (str): Room number.
+
+    Returns:
+        JSON containing patient data or error message.
+    """
     patient = get_patient(room)
     if patient is None:
         return "no patient in room", 400
@@ -246,6 +286,17 @@ def get_patient_data_from_room(room):
 
 
 def decode_image(b64_string, filename):
+    """
+    Decode a base64-encoded image and save to file.
+
+    Args:
+        b64_string (str): Base64 encoded image string.
+        filename (str): Output file path.
+
+    Returns:
+        None
+    """
+
     image_bytes = base64.b64decode(b64_string)
     with open(filename, "wb") as out_file:
         out_file.write(image_bytes)
@@ -254,7 +305,16 @@ def decode_image(b64_string, filename):
 
 @app.route("/cpap", methods=["GET"])
 def get_cpap_from_time():
-    # implement to get the cpap image string at specific time
+    """
+    Retrieve a CPAP image for a specific room and timestamp.
+
+    Query Params:
+        room (str): Room number.
+        time (str): Formatted timestamp.
+
+    Returns:
+        Filename of decoded image or error message.
+    """
     room = request.args.get("room")
     time = request.args.get("time")
     # retrieve from db
@@ -273,6 +333,16 @@ def get_cpap_from_time():
 
 @app.route("/pressure", methods=["POST"])
 def new_pressure():
+    """
+    Update CPAP pressure for a given room.
+
+    Expects JSON payload with:
+        - room (str)
+        - pressure (int)
+
+    Returns:
+        Status message and HTTP status code.
+    """
     data = request.get_json()
     room = data.get("room")
     p = data.get("pressure")
@@ -311,6 +381,15 @@ def get_pressure():
 
 
 def encode_image(image_file):
+    """
+    Encode an image file as a base64 string.
+
+    Args:
+        image_file: File-like object.
+
+    Returns:
+        str: Base64-encoded image string.
+    """
     image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
