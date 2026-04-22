@@ -95,7 +95,6 @@ def test_validate_server_cpap_data(br, apnea, expected):
     assert validate_server_cpap_data(br, apnea) == expected
 
 
-# !!!
 @pytest.mark.parametrize("data, expected", [
     ({"mrn": 123, "room_number": "101"}, True),
     ({"mrn": 123, "room_number": "101", "name": "Ella"}, True),
@@ -336,13 +335,16 @@ def test_get_cpap_success(client):
     from server import encode_image
     reset_db()
     # setup
+    time = datetime.now()
+    time_str = time.strftime("%m/%d/%y %H:%M:%S")
+    file = time.strftime("%m.%d.%y %H:%M:%S")
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
     create_patient_cpap(123, 'A101', 10, 2, 18, cpap_image=b64str,
-                        time='t1', name='Nika')
-    response = client.get("/cpap?room=A101&time=t1")
+                        time=time, name='Nika')
+    response = client.get(f"/cpap?room=A101&time={time_str}")
     assert response.status_code == 200
-    assert response.data.decode() == "cpap_A101_t1"
+    assert response.data.decode() == f"cpap_A101_{file}"
 
 
 def test_get_cpap_no_timestamp(client):
@@ -352,9 +354,9 @@ def test_get_cpap_no_timestamp(client):
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
 
-    create_patient_cpap(123, 'A101', 10, 2, 18, b64str, 't1', 'Nika')
-
-    response = client.get("/cpap?room=A101&time=bad_time")
+    time = datetime.min
+    create_patient_cpap(123, 'A101', 10, 2, 18, b64str, datetime.now(), 'Nika')
+    response = client.get(f"/cpap?room=A101&time={time}")
 
     assert response.status_code == 400
     assert response.data.decode() == "no timestamp"
