@@ -7,6 +7,7 @@ import os
 # connect to server
 server = "http://67.159.79.173:5000"
 
+
 def get_apnea_color(a):
     """
     Determine the display color for an apnea value.
