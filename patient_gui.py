@@ -211,7 +211,7 @@ def main_window():
         Returns:
             bool: True if the pressure is valid, False otherwise.
         '''
-        result = validate_pressure(cpap_value.get())
+        result = validate_pressure(cpap_pressure.get())
         if result is not True:
             return False
         return True
@@ -239,7 +239,7 @@ def main_window():
             *args: Unused arguments passed by trace_add callback.
         '''
         if (name_value.get() or mrn_value.get()
-                or rn_value.get() or cpap_value.get()):
+                or rn_value.get() or cpap_pressure.get()):
             button_reset.config(state=tk.NORMAL)
         else:
             button_reset.config(state=tk.DISABLED)
@@ -299,7 +299,7 @@ def main_window():
         name_value.set(cleared["name"])
         mrn_value.set(cleared["mrn"])
         rn_value.set(cleared["rn"])
-        cpap_value.set(cleared["cpap"])
+        cpap_pressure.set(cleared["cpap"])
         br_value.set(cleared["br"])
         apnea_value.set(cleared["apnea"])
         image_str.set(cleared["image"])
@@ -338,7 +338,7 @@ def main_window():
         if name:
             data["name"] = name
 
-        pres = cpap_value.get().strip()
+        pres = cpap_pressure.get().strip()
         if pres and apnea_value.get() and br_value.get():
             data["cpap_pressure"] = int(pres)
             data["breathing_rate"] = int(br_value.get())
@@ -354,6 +354,19 @@ def main_window():
             status_value.set("Successful Upload.")
         else:
             status_value.set("Upload Failed.")
+
+
+    def data_query():
+        rn = rn_value.get().strip()
+        if rn:
+            r = requests.get(server + "/patient/" + rn)
+            if r.status_code == 200:
+                data = r.json()
+                new_pressure = data.get("pressure")
+                if str(new_pressure) != cpap_pressure:
+                    cpap_pressure.set(str(new_pressure))
+
+        root.after(30000, data_query)
 
     root = tk.Tk()
     root.title("Sleep Lab Monitoring System")
@@ -385,9 +398,9 @@ def main_window():
     rn_label = tk.Label(root, text="Room Number", font=base_font)
     rn_label.grid(column=3, row=1, sticky=tk.W, padx=5)
 
-    cpap_value = tk.StringVar()
+    cpap_pressure = tk.StringVar()
     cpap_entry = tk.Entry(root, font=base_font,
-                          textvariable=cpap_value, width=20,
+                          textvariable=cpap_pressure, width=20,
                           validate="key",
                           validatecommand=(vcmd, "%P"))
     cpap_entry.grid(column=4, row=3, sticky=tk.E, padx=5)
