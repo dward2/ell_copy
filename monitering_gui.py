@@ -32,22 +32,23 @@ def monitering_gui():
     current_img2 = None
 
     def set_option_menu(menu_widget, variable, options):
-        current = variable.get()  # remember current selection
+        current = variable.get()
 
         menu = menu_widget["menu"]
         menu.delete(0, "end")
 
-        for opt in options:
+        # always include placeholder
+        all_options = ["-"] + list(options)
+
+        for opt in all_options:
             menu.add_command(
                 label=str(opt),
                 command=lambda value=opt: variable.set(value)
             )
 
-        # restore selection if still valid
-        if current in options:
+        # preserve selection logic
+        if current in all_options:
             variable.set(current)
-        elif options:
-            variable.set(options[0])  # fallback
         else:
             variable.set("-")
 
@@ -69,18 +70,17 @@ def monitering_gui():
             set_option_menu(room_select, chosen_room, new_rooms)
 
     def time_recent():
-        latest = current_patient["times"][-1]
-        if latest is None:
-            image2_time.set("-")
-        else:
+        try:
+            latest = current_patient["times"][-1]
             image2_time.set(latest)
+        except IndexError:
+            image2_time.set("-")
 
     def display_patient():
         global current_patient
         room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
-        print(current_patient.get("times", []))
 
         p_data.set(
             f"{current_patient.get('name')}\n"
@@ -99,6 +99,7 @@ def monitering_gui():
         time_recent()
 
     def change_times():
+        global current_patient
         new_times = current_patient.get("times", [])
         set_option_menu(time_select, chosen_time, new_times)
 
@@ -196,7 +197,7 @@ def monitering_gui():
         if chosen_room.get() != "-":
             display_patient()
             change_times()
-        root.after(30000, update_data)
+        root.after(10000, update_data)
 
     initial_root = tk.Tk()
     initial_root.geometry('470x490')

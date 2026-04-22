@@ -4,7 +4,7 @@ import base64
 from pymongo import MongoClient
 from mongo import collection, create_patient, update_patient_name
 from mongo import create_patient_cpap, update_cpap_data
-from mongo import get_room_list, get_patient, reset_db, change_pressure
+from mongo import get_room_list, get_patient, change_pressure
 from datetime import datetime
 
 app = Flask(__name__)
