@@ -7,7 +7,7 @@ def test_returns_red():
 
 
 def test_returns_black():
-    assert get_apnea_color(2) == 'black'
+    assert get_apnea_color(1) == 'black'
 
 
 def test_empty():

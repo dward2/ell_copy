@@ -6,6 +6,7 @@ client = MongoClient(uri, tlsAllowInvalidCertificates=True)
 client.admin.command({'ping': 1})
 db = client["patient_db"]          # creates it if it doesn't exist
 collection = db["patient"]
+collection.create_index("room_number", unique=True)
 
 
 def create_patient(mrn, rn, name=None):
@@ -20,40 +21,56 @@ def create_patient(mrn, rn, name=None):
         "mrn": mrn,
         "room_number": rn,
         "name": name,
+        "pressure": None,
+        "apnea_count": None,
+        "breathing_rate": None,
+        "cpap_data": []
     }
     collection.insert_one(new_patient)
 
 
-def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
-    '''Create a new patient record with pressure and
-    cpap file data.
-
-     Args:
-        mrn (int): medical record number.
-        rn (str): room number.
-        pres (int): CPAP pressure.
-        apnea (int): number of apnea events.
-        br (int): breathing rate in bpm.
-        cpap_image (str): base64 encoded cpap plot.
-        time (str): timestamp of the CPAP data.
-        name (str) (optional): patient name.
-    '''
+def replace_patient_in_room(mrn, room, name=None):
     new_patient = {
-        "name": name,
         "mrn": mrn,
-        "room_number": rn,
-        "pressure": pres,
-        "apnea_count": apnea,
-        "breathing_rate": br,
-        "cpap_data": [{
-            "time": time,
-            "image": cpap_image
-        }]
+        "room_number": room,
+        "name": name,
+        "pressure": None,
+        "apnea_count": None,
+        "breathing_rate": None,
+        "cpap_data": []
     }
-    collection.insert_one(new_patient)
+    collection.replace_one({"room_number": room}, new_patient)
 
 
-def update_patient_name(mrn, name):
+# def create_patient_cpap(mrn, rn, apnea, br, cpap_image, time, name=None):
+#     '''Create a new patient record with pressure and
+#     cpap file data.
+
+#      Args:
+#         mrn (int): medical record number.
+#         rn (str): room number.
+#         apnea (int): number of apnea events.
+#         br (int): breathing rate in bpm.
+#         cpap_image (str): base64 encoded cpap plot.
+#         time (str): timestamp of the CPAP data.
+#         name (str) (optional): patient name.
+#     '''
+#     new_patient = {
+#         "name": name,
+#         "mrn": mrn,
+#         "room_number": rn,
+#         "pressure": None,
+#         "apnea_count": apnea,
+#         "breathing_rate": br,
+#         "cpap_data": [{
+#             "time": time,
+#             "image": cpap_image
+#         }]
+#     }
+#     collection.insert_one(new_patient)
+
+
+def update_patient_name(room, name):
     '''Update an existing patient's
     name in the database.
 
@@ -61,15 +78,15 @@ def update_patient_name(mrn, name):
         mrn(int): medical record number
         name(str): new patient name
     '''
-    patient = collection.find_one({"mrn": mrn})
+    patient = collection.find_one({"room_number": room})
     if patient is not None:
         collection.update_one(
-            {"mrn": mrn},
+            {"room_number": room},
             {"$set": {"name": name}}
         )
 
 
-def update_cpap_data(mrn, apnea, br, cpap_image, time):
+def append_cpap_data(room, apnea, br, cpap_image, time):
     '''Update CPAP data for existing patients.
     Replace breathing rate and apnea count with new values.
     Append new image and timestamp into a list.
@@ -84,7 +101,7 @@ def update_cpap_data(mrn, apnea, br, cpap_image, time):
     # change the pressure, br, and apnea to new data.
     # append new cpap image with timestamp
     collection.update_one(
-        {"mrn": mrn},
+        {"room_number": room},
         {
             "$set": {
                 "apnea_count": apnea,
@@ -134,9 +151,7 @@ def change_pressure(room, p):
         p (int): new CPAP pressure
 
     '''
-    patient = collection.find_one({"room_number": room})
-    if patient is not None:
-        collection.update_one({"room_number": room}, {"$set": {"pressure": p}})
+    collection.update_one({"room_number": room}, {"$set": {"pressure": p}})
 
 
 def reset_db():

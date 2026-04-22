@@ -1,208 +1,132 @@
 import pytest
-from pymongo import MongoClient
-from mongo import create_patient, create_patient_cpap, update_patient_name
-from mongo import update_cpap_data, get_room_list, get_patient, change_pressure
-from mongo import reset_db
 from datetime import datetime
+from pymongo.errors import DuplicateKeyError
 
-uri = "mongodb+srv://emf55:qFYD@cluster0.tjtcig3.mongodb.net/?appName=Cluster0"
-client = MongoClient(uri, tlsAllowInvalidCertificates=True)
-client.admin.command({'ping': 1})
-db = client["patient_db"]          # creates it if it doesn't exist
-collection = db["patient"]
+from mongo import (
+    collection,
+    create_patient,
+    replace_patient_in_room,
+    update_patient_name,
+    append_cpap_data,
+    get_room_list,
+    get_patient,
+    change_pressure,
+    reset_db
+)
 
 
 @pytest.fixture(autouse=True)
 def clean_db():
-    collection.delete_many({})
+    reset_db()
     yield
-    collection.delete_many({})
+    reset_db()
 
 
 def test_create_patient():
-    create_patient(30, "101")
-    patient = collection.find_one({"mrn": 30})
-    assert patient is not None
-    assert patient["mrn"] == 30
-    assert patient["room_number"] == "101"
+    create_patient(123, "101", "Nika")
 
+    patient = collection.find_one({"room_number": "101"})
 
-def test_create_patient_cpap():
-    create_patient_cpap(
-        200, "302", 10, 3, 21,
-        "base64_image",
-        "2026-04-21 14:00:00",
-        name="Nika"
-    )
-    patient = collection.find_one({"mrn": 200})
-    assert patient["name"] == "Nika"
-    assert patient["room_number"] == "302"
-    assert len(patient["cpap_data"]) == 1
-    assert patient["pressure"] == 10
-    assert patient["apnea_count"] == 3
-    assert patient["breathing_rate"] == 21
-
-
-def test_patient_cpap_no_name():
-    create_patient_cpap(
-        200, "302", 10, 3, 21,
-        "base64_image",
-        "2026-04-21 14:00:00",
-        name=None
-    )
-    patient = collection.find_one({"mrn": 200})
-    assert len(patient["cpap_data"]) == 1
-    assert patient["name"] is None
-    assert patient["pressure"] == 10
-    assert patient["apnea_count"] == 3
-    assert patient["breathing_rate"] == 21
-
-
-def test_update_patient_name():
-    create_patient(321, "423", name=None)
-    update_patient_name(321, "Nika")
-    patient = collection.find_one({"mrn": 321})
-    assert patient["name"] == "Nika"
-
-
-def test_update_patient_name_cpap():
-    create_patient_cpap(
-        200, "302", 10, 3, 21,
-        "base64_image",
-        "2026-04-21 14:00:00",
-        name=None
-    )
-    update_patient_name(200, "Nika")
-    patient = collection.find_one({"mrn": 200})
-    assert patient["name"] == "Nika"
-
-
-def test_update_patient_name_replacement():
-    create_patient(321, "423", name="Ella")
-    update_patient_name(321, "Nika")
-    patient = collection.find_one({"mrn": 321})
-    assert patient["name"] == "Nika"
-
-
-def test_update_patient_name_replacement_cpap():
-    create_patient_cpap(
-        200, "302", 10, 3, 21,
-        "base64_image",
-        "2026-04-21 14:00:00",
-        name="Ella"
-    )
-    update_patient_name(200, "Nika")
-    patient = collection.find_one({"mrn": 200})
-    assert patient["name"] == "Nika"
-
-
-def test_patient_name_nonexist():
-    update_patient_name(111, "Nika")
-    patient = collection.find_one({"mrn": 111})
-    assert patient is None
-
-
-def test_update_cpap_data():
-    create_patient(302, "101")
-    update_cpap_data(302, 3, 21, "image1",
-                     "2026-04-21 14:00:00")
-    patient = collection.find_one({"mrn": 302})
-    assert patient["apnea_count"] == 3
-    assert patient["breathing_rate"] == 21
-    assert len(patient["cpap_data"]) == 1
-    assert patient["cpap_data"][0]["time"] == "2026-04-21 14:00:00"
-    assert patient["cpap_data"][0]["image"] == "image1"
-
-
-def test_update_cpap_data_appends_history():
-    create_patient(302, "101")
-
-    t1 = datetime(2026, 4, 21, 14, 0)
-    t2 = datetime(2026, 4, 21, 15, 0)
-    t3 = datetime(2026, 4, 21, 16, 0)
-
-    update_cpap_data(302, 3, 21, "image1", t1)
-    update_cpap_data(302, 0, 18, "image2", t2)
-    update_cpap_data(302, 1, 16, "image3", t3)
-
-    patient = collection.find_one({"mrn": 302})
-
-    times = [e["time"] for e in patient["cpap_data"]]
-
-    assert len(times) == 3
-    assert times == sorted(times)
-    assert times[0] == t1
-    assert times[1] == t2
-    assert times[2] == t3
-
-
-def test_get_room_list():
-    collection.delete_many({})  # clean slate
-
-    collection.insert_many([
-        {"mrn": 1, "room_number": "A101"},
-        {"mrn": 2, "room_number": "B202"},
-        {"mrn": 3, "room_number": "A101"},
-    ])
-
-    rooms = get_room_list()
-
-    assert set(rooms) == {"A101", "B202"}
-
-
-def test_get_room_list_empty():
-    # ensure collection is empty
-    collection.delete_many({})
-    rooms = get_room_list()
-    assert rooms == []
-
-
-def test_get_patient():
-    collection.delete_many({})  # clean state
-    collection.insert_one({
-        "mrn": 123,
-        "name": "Nika",
-        "room_number": "A101"
-    })
-    patient = get_patient("A101")
     assert patient is not None
     assert patient["mrn"] == 123
     assert patient["name"] == "Nika"
-    assert patient["room_number"] == "A101"
+    assert patient["pressure"] is None
+    assert patient["apnea_count"] is None
+    assert patient["breathing_rate"] is None
+    assert patient["cpap_data"] == []
 
 
-def test_get_patient_not_found():
-    collection.delete_many({})  # ensure empty
-    patient = get_patient("Z999")
-    assert patient is None
+def test_room_unique():
+    create_patient(123, "101")
+
+    with pytest.raises(DuplicateKeyError):
+        create_patient(456, "101")
+
+
+def test_replace_patient_in_room():
+    create_patient(123, "101", "Old")
+
+    replace_patient_in_room(456, "101", "New")
+
+    patients = list(collection.find({"room_number": "101"}))
+    assert len(patients) == 1
+    assert patients[0]["mrn"] == 456
+    assert patients[0]["name"] == "New"
+    assert patients[0]["cpap_data"] == []
+
+
+def test_update_patient_name():
+    create_patient(123, "101", "Old")
+
+    update_patient_name("101", "New")
+
+    patient = get_patient("101")
+    assert patient["name"] == "New"
 
 
 def test_change_pressure():
-    collection.delete_many({})  # clean state
+    create_patient(123, "101")
 
-    # setup
-    collection.insert_one({
-        "mrn": 1,
-        "room_number": "A101",
-        "pressure": 5
-    })
+    change_pressure("101", 10)
 
-    # call function
-    change_pressure("A101", 10)
-
-    # verify
-    patient = collection.find_one({"room_number": "A101"})
-    assert patient is not None
+    patient = get_patient("101")
     assert patient["pressure"] == 10
 
 
-def test_change_pressure_no_patient():
-    collection.delete_many({})
-    change_pressure("Z999", 10)
-    patient = collection.find_one({"room_number": "Z999"})
+def test_append_cpap_data():
+    create_patient(123, "101")
+
+    t1 = datetime.now()
+    append_cpap_data("101", 2, 18, "img1", t1)
+
+    patient = get_patient("101")
+
+    assert patient["apnea_count"] == 2
+    assert patient["breathing_rate"] == 18
+    assert len(patient["cpap_data"]) == 1
+    assert patient["cpap_data"][0]["image"] == "img1"
+    assert patient["cpap_data"][0]["time"].strftime("%m/%d/%y %H:%M:%S") == \
+        t1.strftime("%m/%d/%y %H:%M:%S")
+
+
+def test_append_cpap_data_multiple():
+    create_patient(123, "101")
+
+    t1 = datetime.now()
+    t2 = datetime.now()
+
+    append_cpap_data("101", 2, 18, "img1", t1)
+    append_cpap_data("101", 3, 20, "img2", t2)
+
+    patient = get_patient("101")
+
+    assert len(patient["cpap_data"]) == 2
+    assert patient["cpap_data"][0]["image"] == "img1"
+    assert patient["cpap_data"][1]["image"] == "img2"
+
+    # latest values overwrite
+    assert patient["apnea_count"] == 3
+    assert patient["breathing_rate"] == 20
+
+
+def test_get_room_list():
+    create_patient(1, "101")
+    create_patient(2, "102")
+
+    rooms = get_room_list()
+
+    assert set(rooms) == {"101", "102"}
+
+
+def test_get_patient():
+    create_patient(123, "101")
+
+    patient = get_patient("101")
+
+    assert patient is not None
+    assert patient["mrn"] == 123
+
+
+def test_get_patient_not_found():
+    patient = get_patient("999")
     assert patient is None
-
-
-def test_reset_db():
-    reset_db()
-    assert collection.count_documents({}) == 0

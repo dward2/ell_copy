@@ -2,9 +2,9 @@ from flask import Flask, request, jsonify
 import mongo
 import base64
 from pymongo import MongoClient
-from mongo import collection, create_patient, update_patient_name
-from mongo import create_patient_cpap, update_cpap_data
+from mongo import create_patient, update_patient_name, append_cpap_data
 from mongo import get_room_list, get_patient, change_pressure
+from mongo import replace_patient_in_room
 from datetime import datetime
 
 app = Flask(__name__)
@@ -149,62 +149,50 @@ def validate_uploaded_data(data):
         pres_check = validate_server_pressure(data["cpap_pressure"])
         if pres_check is not True:
             return pres_check
+    if 'image' in data:
         if "breathing_rate" not in data:
-            return "Breathing rate required with CPAP pressure"
+            return "Breathing rate required with CPAP file"
         if "apnea_count" not in data:
-            return "Apnea count required with CPAP pressure"
+            return "Apnea count required with CPAP file"
         cpap_check = validate_server_cpap_data(
             data["breathing_rate"], data["apnea_count"]
         )
         if cpap_check is not True:
             return cpap_check
-
     return True
 
 
 def upload_processing(data):
-    '''Processes and stores patient data in
-    database.
-    Args:
-    data (dict): patient data containing mrn, room_number,
-        and optionally name and CPAP data.
-    Returns:
-        tuple: (message dict, status_code)
-    '''
     mrn = data["mrn"]
-    room_number = data["room_number"]
-    name = data.get("name", None)
-    time = datetime.now()
-    image_str = data.get("image")
-    patient = collection.find_one({"mrn": mrn})
+    room = data["room_number"]
+    name = data.get("name")
     pressure = data.get("cpap_pressure")
+    image = data.get("image")
+    br = data.get("breathing_rate")
+    apnea = data.get("apnea_count")
+    now = datetime.now()
+
+    patient = get_patient(room)
+
+    # --- CASE 1: empty room ---
     if patient is None:
-        if "cpap_pressure" in data:
-            create_patient_cpap(
-                mrn,
-                room_number,
-                pressure,
-                data["apnea_count"],
-                data["breathing_rate"],
-                image_str,
-                time,
-                name=name
-            )
-        else:
-            create_patient(mrn, room_number, name)
+        create_patient(mrn, room, name)
+
+    # --- CASE 2: different patient in same room ---
+    elif patient["mrn"] != mrn:
+        replace_patient_in_room(mrn, room, name)
+
+    # --- CASE 3: same patient ---
     else:
         if name is not None:
-            update_patient_name(mrn, name)
-        if pressure is not None:
-            change_pressure(room_number, pressure)
-        if image_str is not None:
-            update_cpap_data(
-                mrn,
-                data["apnea_count"],
-                data["breathing_rate"],
-                data["image"],
-                datetime.now()
-            )
+            update_patient_name(room, name)
+
+    # --- independent updates ---
+    if pressure is not None:
+        change_pressure(room, pressure)
+
+    if image is not None:
+        append_cpap_data(room, apnea, br, image, now)
 
     return {"message": "Success"}, 200
 
@@ -268,19 +256,26 @@ def get_patient_data_from_room(room):
     patient = get_patient(room)
     if patient is None:
         return "no patient in room", 400
-    # sort datetimes
-    sorted_data = sorted(
-        patient.get("cpap_data"),
-        key=lambda x: x.get("time")
-    )
+
+    cpap_data = patient.get("cpap_data")
+
+    if cpap_data:
+        sorted_data = sorted(
+            cpap_data,
+            key=lambda x: x.get("time")
+        )
+        times = [
+            format_time(entry.get("time"))
+            for entry in sorted_data
+        ]
+    else:
+        times = None
     display_patient = {"name": patient.get("name"),
                        "mrn": patient.get("mrn"),
                        "pressure": patient.get("pressure"),
                        "br": patient.get("breathing_rate"),
                        "apnea": patient.get("apnea_count"),
-                       "times": [
-                            format_time(entry.get("time"))
-                            for entry in sorted_data]
+                       "times": times
                        }
     return jsonify(display_patient), 200
 
@@ -319,6 +314,9 @@ def get_cpap_from_time():
     time = request.args.get("time")
     # retrieve from db
     patient = get_patient(room)
+    patient = get_patient(room)
+    if patient is None:
+        return "room not found", 404
     for entry in patient["cpap_data"]:
         if format_time(entry["time"]) == time:
             image_str = entry["image"]
@@ -375,8 +373,6 @@ def get_pressure():
     if patient is None:
         return "room not found", 404
     pressure = patient.get("pressure")
-    if pressure is None:
-        return "no pressure commanded", 404
     return jsonify({"pressure": pressure}), 200
 
 
