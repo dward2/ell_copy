@@ -81,14 +81,18 @@ def monitering_gui():
         print(current_patient.get("times", []))
 
         p_data.set(
-            f"{current_patient['name']}\n"
-            f"id: {current_patient['mrn']}\n"
-            f"Latest Pressure: {current_patient['pressure']}\n"
-            f"Breathing Rate: {current_patient['br']}"
+            f"{current_patient.get('name')}\n"
+            f"id: {current_patient.get('mrn')}\n"
+            f"Latest Pressure: {current_patient.get('pressure')}\n"
+            f"Breathing Rate: {current_patient.get('br')}"
         )
-        a_data.set(int(current_patient["apnea"]))
+        apnea_val = current_patient.get("apnea")
+        if apnea_val is not None:
+            a_data.set(apnea_val)
+        else:
+            a_data.set('-')
 
-        apnea_label.config(fg=get_apnea_color(a_data.get()))
+        apnea_data.config(fg=get_apnea_color(a_data.get()))
 
         time_recent()
 
@@ -101,6 +105,7 @@ def monitering_gui():
         cpap_image1.image = None
 
     def display_image1():
+        global current_img1
         # call when new time is selected
         if chosen_time.get() == "-":
             clear_image1()
@@ -117,6 +122,7 @@ def monitering_gui():
                 img_tk = ImageTk.PhotoImage(img_resized)
                 cpap_image1.config(image=img_tk, text="")
                 cpap_image1.image = img_tk
+                current_img1 = pil_img
                 os.remove(filename)
 
     def clear_image2():
@@ -124,6 +130,7 @@ def monitering_gui():
         cpap_image2.image = None
 
     def display_image2():
+        global current_img2
         # call when new room is selected
         if chosen_room.get() == "-":
             clear_image2()
@@ -140,6 +147,7 @@ def monitering_gui():
                 img_tk = ImageTk.PhotoImage(img_resized)
                 cpap_image2.config(image=img_tk, text="")
                 cpap_image2.image = img_tk
+                current_img2 = pil_img
                 os.remove(filename)
             else:
                 clear_image2()
@@ -147,8 +155,8 @@ def monitering_gui():
     def room_changed(*args):
         if chosen_room.get() != "-":
             display_patient()
-        change_times()
-        display_image2()
+            change_times()
+            display_image2()
 
     def time_changed(*args):
         image1_time.set(chosen_time.get())
@@ -171,12 +179,10 @@ def monitering_gui():
             current_img2.save(file_path)
 
     def update_data():
-        global current_img1
-        global current_img2
-
         update_rooms()
         if chosen_room.get() != "-":
             display_patient()
+            change_times()
         root.after(30000, update_data)
 
     initial_root = tk.Tk()
@@ -216,7 +222,7 @@ def monitering_gui():
     apnea_label = tk.Label(root, text="Apnea: ")
     apnea_label.grid(row=3, column=2, sticky='w')
 
-    a_data = tk.IntVar(value=0)
+    a_data = tk.StringVar(value='-')
     apnea_color = tk.StringVar()
     apnea_color.set("black")
     apnea_data = tk.Label(root, textvariable=a_data, fg=apnea_color.get())
