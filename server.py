@@ -149,16 +149,16 @@ def validate_uploaded_data(data):
         pres_check = validate_server_pressure(data["cpap_pressure"])
         if pres_check is not True:
             return pres_check
+    if 'image' in data:
         if "breathing_rate" not in data:
-            return "Breathing rate required with CPAP pressure"
+            return "Breathing rate required with CPAP file"
         if "apnea_count" not in data:
-            return "Apnea count required with CPAP pressure"
+            return "Apnea count required with CPAP file"
         cpap_check = validate_server_cpap_data(
             data["breathing_rate"], data["apnea_count"]
         )
         if cpap_check is not True:
             return cpap_check
-
     return True
 
 
@@ -180,16 +180,14 @@ def upload_processing(data):
     pressure = data.get("cpap_pressure")
     if patient is None:
         if "cpap_pressure" in data:
-            create_patient_cpap(
+            create_patient(
                 mrn,
                 room_number,
-                pressure,
-                data["apnea_count"],
-                data["breathing_rate"],
-                image_str,
-                time,
                 name=name
             )
+            change_pressure(room_number, pressure)
+        if "image" in data:
+            create_patient_cpap(mrn, room_number, data.get('apnea_count'), data.get("breathing_rate"), image_str, time, name)
         else:
             create_patient(mrn, room_number, name)
     else:

@@ -142,13 +142,33 @@ def apnea_color(ap):
     if ap >= 2:
         return "red"
     else:
-        return "white"
+        return "black"
 
 
 def encode_image(image_file):
     image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
+
+
+def clear_fields():
+    '''Clear all fields.
+    Return a dictionary of empty values.
+
+    Returns:
+    dict: empty values for each field.
+    '''
+    return {
+    "name": "",
+    "mrn": "",
+    "rn": "",
+    "cpap": "",
+    "br": "",
+    "apnea": "",
+    "image": "",
+    "apnea_color": "black",
+    "status": "Enter Patient Information Above"
+    }
 
 
 def main_window():
@@ -272,18 +292,18 @@ def main_window():
         plt.close(fig)
 
     def reset_device():
-        '''Resets all fields and displays to their default state.
+        '''Reset all fields and displays to their default state.
         Clears all entries, results, and plot.
         Reactivates MRN and room number entries.
         '''
-        name_value.set("")
-        mrn_value.set("")
-        rn_value.set("")
-        cpap_value.set("")
-        br_value.set("")
-        apnea_value.set("")
-        image_str.set("")
-        apnea_display.config(fg="black")
+        cleared = clear_fields()
+        name_value.set(cleared["name"])
+        mrn_value.set(cleared["mrn"])
+        rn_value.set(cleared["rn"])
+        cpap_value.set(cleared["cpap"])
+        br_value.set(cleared["br"])
+        apnea_value.set(cleared["apnea"])
+        image_str.set(cleared["image"])
 
         for widget in plot_frame.winfo_children():
             widget.destroy()
@@ -320,14 +340,20 @@ def main_window():
             data["name"] = name
 
         pres = cpap_value.get().strip()
+        if pres:
+            result = validate_pressure(pres)
+            if result is not True:
+                status_value.set(result)
+                return
+            data["cpap_pressure"] = int(pres)
+
         br = br_value.get().strip()
         apnea = apnea_value.get().strip()
-        if pres and apnea and br:
-            data["cpap_pressure"] = int(pres)
-            data["breathing_rate"] = int(br_value.get())
-            data["apnea_count"] = int(apnea_value.get())
-        if image_str.get():
-            data["image"] = image_str.get()
+        if br and apnea:
+            data["breathing_rate"] = int(br)
+            data["apnea_count"] = int(apnea)
+            if image_str.get():
+                data["image"] = image_str.get()
 
         print("Sending data:", data)
         r = requests.post(server + "/api/patient", json=data)

@@ -29,7 +29,7 @@ def test_create_patient():
 
 def test_create_patient_cpap():
     create_patient_cpap(
-        200, "302", 10, 3, 21,
+        200, "302", 3, 21,
         "base64_image",
         "2026-04-21 14:00:00",
         name="Nika"
@@ -38,14 +38,13 @@ def test_create_patient_cpap():
     assert patient["name"] == "Nika"
     assert patient["room_number"] == "302"
     assert len(patient["cpap_data"]) == 1
-    assert patient["pressure"] == 10
     assert patient["apnea_count"] == 3
     assert patient["breathing_rate"] == 21
 
 
 def test_patient_cpap_no_name():
     create_patient_cpap(
-        200, "302", 10, 3, 21,
+        200, "302", 3, 21,
         "base64_image",
         "2026-04-21 14:00:00",
         name=None
@@ -53,7 +52,6 @@ def test_patient_cpap_no_name():
     patient = collection.find_one({"mrn": 200})
     assert len(patient["cpap_data"]) == 1
     assert patient["name"] is None
-    assert patient["pressure"] == 10
     assert patient["apnea_count"] == 3
     assert patient["breathing_rate"] == 21
 
@@ -67,7 +65,7 @@ def test_update_patient_name():
 
 def test_update_patient_name_cpap():
     create_patient_cpap(
-        200, "302", 10, 3, 21,
+        200, "302", 3, 21,
         "base64_image",
         "2026-04-21 14:00:00",
         name=None
@@ -86,7 +84,7 @@ def test_update_patient_name_replacement():
 
 def test_update_patient_name_replacement_cpap():
     create_patient_cpap(
-        200, "302", 10, 3, 21,
+        200, "302", 3, 21,
         "base64_image",
         "2026-04-21 14:00:00",
         name="Ella"

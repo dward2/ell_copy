@@ -24,14 +24,13 @@ def create_patient(mrn, rn, name=None):
     collection.insert_one(new_patient)
 
 
-def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
+def create_patient_cpap(mrn, rn, apnea, br, cpap_image, time, name=None):
     '''Create a new patient record with pressure and
     cpap file data.
 
      Args:
         mrn (int): medical record number.
         rn (str): room number.
-        pres (int): CPAP pressure.
         apnea (int): number of apnea events.
         br (int): breathing rate in bpm.
         cpap_image (str): base64 encoded cpap plot.
@@ -42,7 +41,7 @@ def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
         "name": name,
         "mrn": mrn,
         "room_number": rn,
-        "pressure": pres,
+        "pressure": None,
         "apnea_count": apnea,
         "breathing_rate": br,
         "cpap_data": [{

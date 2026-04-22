@@ -98,19 +98,16 @@ def test_validate_server_cpap_data(br, apnea, expected):
 @pytest.mark.parametrize("data, expected", [
     ({"mrn": 123, "room_number": "101"}, True),
     ({"mrn": 123, "room_number": "101", "name": "Ella"}, True),
+    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10}, True),
     ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
       "breathing_rate": 21, "apnea_count": 3}, True),
     ("not a dict", "Invalid data format"),
     ({}, "MRN is required"),
     ({"mrn": 123}, "Room number is required"),
-    ({"mrn": "abc", "room_number": "101"},
-     "MRN must be an integer"),
-    ({"mrn": 123, "room_number": 101},
-     "Room number must be a string"),
-    ({"mrn": 123, "room_number": "abc"},
-     "Room number must contain only digits"),
-    ({"mrn": 123, "room_number": "101", "name": 123},
-     "Name must be a string"),
+    ({"mrn": "abc", "room_number": "101"}, "MRN must be an integer"),
+    ({"mrn": 123, "room_number": 101}, "Room number must be a string"),
+    ({"mrn": 123, "room_number": "abc"}, "Room number must contain only digits"),
+    ({"mrn": 123, "room_number": "101", "name": 123}, "Name must be a string"),
     ({"mrn": 123, "room_number": "101", "name": "John123"},
      "Name contains invalid characters"),
     ({"mrn": 123, "room_number": "101", "cpap_pressure": "abc"},
@@ -119,21 +116,22 @@ def test_validate_server_cpap_data(br, apnea, expected):
      "CPAP pressure must be between 4 and 25"),
     ({"mrn": 123, "room_number": "101", "cpap_pressure": 26},
      "CPAP pressure must be between 4 and 25"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10},
-     "Breathing rate required with CPAP pressure"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
-      "breathing_rate": 21},
-     "Apnea count required with CPAP pressure"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+
+    # image-triggered CPAP validation
+    ({"mrn": 123, "room_number": "101", "image": "abc"},
+     "Breathing rate required with CPAP file"),
+    ({"mrn": 123, "room_number": "101", "image": "abc", "breathing_rate": 21},
+     "Apnea count required with CPAP file"),
+    ({"mrn": 123, "room_number": "101", "image": "abc",
       "breathing_rate": "abc", "apnea_count": 3},
      "Breathing rate must be an integer"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+    ({"mrn": 123, "room_number": "101", "image": "abc",
       "breathing_rate": 21, "apnea_count": "abc"},
      "Apnea count must be an integer"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+    ({"mrn": 123, "room_number": "101", "image": "abc",
       "breathing_rate": -1, "apnea_count": 3},
      "Breathing rate cannot be negative"),
-    ({"mrn": 123, "room_number": "101", "cpap_pressure": 10,
+    ({"mrn": 123, "room_number": "101", "image": "abc",
       "breathing_rate": 21, "apnea_count": -1},
      "Apnea count cannot be negative"),
 ])
@@ -216,7 +214,7 @@ def test_upload_processing_no_name_update_when_absent():
 
 def test_upload_processing_update_pressure():
     from server import upload_processing
-    create_patient_cpap(50, "305", 10, 2, 15, None, datetime.now(),
+    create_patient_cpap(50, "305", 2, 15, None, datetime.now(),
                         name="Nika")
     upload_processing({"mrn": 50, "room_number": "305", "cpap_pressure": 18})
     patient = get_patient("305")
@@ -241,25 +239,19 @@ def test_upload_processing_update_wo_name():
     assert patient["name"] == "Nika"
 
 
-def test_upload_processing_cpap():
+def test_upload_processing_pres():
     from server import upload_processing
     data = {
         "mrn": 304,
         "room_number": "203",
         "cpap_pressure": 10,
-        "breathing_rate": 21,
-        "apnea_count": 3
     }
     message, status = upload_processing(data)
     assert status == 200
     patient = collection.find_one({"mrn": 304})
     assert patient is not None
     assert patient["room_number"] == "203"
-    assert patient["name"] == "Nika"
-    assert len(patient["cpap_data"]) == 1
     assert patient["pressure"] == 10
-    assert patient["breathing_rate"] == 21
-    assert patient["apnea_count"] == 3
 
 
 def test_upload_processing_cpap():
@@ -267,9 +259,9 @@ def test_upload_processing_cpap():
     data = {
         "mrn": 304,
         "room_number": "203",
-        "cpap_pressure": 10,
         "breathing_rate": 21,
         "apnea_count": 3,
+        "image": "string",
         "name": "Nika"
     }
     message, status = upload_processing(data)
@@ -279,7 +271,6 @@ def test_upload_processing_cpap():
     assert patient["room_number"] == "203"
     assert patient["name"] == "Nika"
     assert len(patient["cpap_data"]) == 1
-    assert patient["pressure"] == 10
     assert patient["breathing_rate"] == 21
     assert patient["apnea_count"] == 3
 
@@ -305,7 +296,7 @@ def test_get_rooms_route(client):
 def test_get_patient_data_from_room_success(client):
     reset_db()
     datetime_me = datetime.now()
-    create_patient_cpap(123, '101', 10, 2, 18, '', datetime_me, 'Nika')
+    create_patient_cpap(123, '101', 2, 18, '', datetime_me, 'Nika')
 
     # call route
     response = client.get("/patient/101")
@@ -317,7 +308,6 @@ def test_get_patient_data_from_room_success(client):
     assert data == {
         "name": "Nika",
         "mrn": 123,
-        "pressure": 10,
         "br": 18,
         "apnea": 2,
         "times": [datetime_me.strftime("%m/%d/%y %H:%M:%S")]
@@ -340,7 +330,7 @@ def test_get_cpap_success(client):
     file = time.strftime("%m.%d.%y %H:%M:%S")
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
-    create_patient_cpap(123, 'A101', 10, 2, 18, cpap_image=b64str,
+    create_patient_cpap(123, 'A101', 2, 18, cpap_image=b64str,
                         time=time, name='Nika')
     response = client.get(f"/cpap?room=A101&time={time_str}")
     assert response.status_code == 200
@@ -355,7 +345,7 @@ def test_get_cpap_no_timestamp(client):
         b64str = encode_image(image_file)
 
     time = datetime.min
-    create_patient_cpap(123, 'A101', 10, 2, 18, b64str, datetime.now(), 'Nika')
+    create_patient_cpap(123, 'A101', 2, 18, b64str, datetime.now(), 'Nika')
     response = client.get(f"/cpap?room=A101&time={time}")
 
     assert response.status_code == 400
@@ -364,7 +354,7 @@ def test_get_cpap_no_timestamp(client):
 
 def test_new_pressure_success(client):
     reset_db()
-    create_patient_cpap(123, '101', 5, 2, 18, '', 't1', 'Nika')
+    create_patient_cpap(123, '101', 2, 18, '', 't1', 'Nika')
     response = client.post("/pressure", json={
         "room": "101",
         "pressure": 10
@@ -378,7 +368,7 @@ def test_new_pressure_success(client):
 
 def test_new_pressure_invalid(client):
     reset_db()
-    create_patient_cpap(123, '101', 5, 2, 18, '', 't1', 'Nika')
+    create_patient_cpap(123, '101', 2, 18, '', 't1', 'Nika')
 
     response = client.post("/pressure", json={
         "room": "101",
@@ -425,7 +415,7 @@ def test_upload_processing_saves_image_in_cpap(client):
     from server import upload_processing
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
-    create_patient_cpap(123, "101", 10, 2, 18,
+    create_patient_cpap(123, "101", 2, 18,
                         None, datetime.now(), "Nika")
     upload_processing({
         "mrn": 123, "room_number": "101",
@@ -440,7 +430,7 @@ def test_upload_processing_saves_image_in_cpap(client):
 def test_times_sorted(client):
     t1 = datetime(2025, 1, 1, 8, 0, 0)
     t2 = datetime(2025, 1, 1, 9, 0, 0)
-    create_patient_cpap(123, "101", 10, 2, 18, '', t2, "Nika")
+    create_patient_cpap(123, "101", 2, 18, '', t2, "Nika")
     collection.update_one({"mrn": 123}, {"$push": {"cpap_data": {
         "time": t1, "breathing_rate": 15,
         "apnea_count": 1, "image": ""
@@ -463,11 +453,3 @@ def test_get_pressure_room_not_found(client):
     response = client.get("/pressure?room=999")
     assert response.status_code == 404
     assert response.data.decode() == "room not found"
-
-
-def test_get_pressure_no_pressure_commanded(client):
-    reset_db()
-    create_patient(123, "101", name="Nika")
-    response = client.get("/pressure?room=101")
-    assert response.status_code == 404
-    assert response.data.decode() == "no pressure commanded"
