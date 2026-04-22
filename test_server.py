@@ -341,6 +341,7 @@ def test_new_pressure_invalid(client):
     assert response.status_code == 400
     assert response.data.decode() == "invalid"
 
+
 def test_format_time_standard():
     dt = datetime(2025, 1, 5, 14, 30, 45)
     assert format_time(dt) == "01/05/25 14:30:45"

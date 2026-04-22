@@ -3,19 +3,19 @@ from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import requests
 import os
-from datetime import datetime
 
 # connect to server
 server = 'http://127.0.0.1:5000'
 
+
 def get_apnea_color(a):
-        try:
-            if a > 2:
-                return 'red'
-            else:
-                 return 'black'
-        except TypeError:
+    try:
+        if a > 2:
+            return 'red'
+        else:
             return 'black'
+    except TypeError:
+        return 'black'
 
 
 def monitering_gui():
@@ -67,7 +67,6 @@ def monitering_gui():
         if r.status_code == 200:
             new_rooms = r.json()
             set_option_menu(room_select, chosen_room, new_rooms)
-
 
     def time_recent():
         latest = current_patient["times"][-1]
