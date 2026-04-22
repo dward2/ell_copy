@@ -21,7 +21,7 @@ def get_apnea_color(a):
              otherwise 'black'. Returns 'black' if conversion fails.
     """
     try:
-        if int(a) > 2:
+        if int(a) >= 2:
             return 'red'
         else:
             return 'black'
