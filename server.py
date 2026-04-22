@@ -15,7 +15,6 @@ def server_status():
     return "server is running"
 
 
-# validate mrn
 def validate_server_mrn(mrn):
     '''Validates MRN from server
     request.
@@ -30,7 +29,6 @@ def validate_server_mrn(mrn):
     return True
 
 
-# validate rn
 def validate_server_rn(rn):
     '''Validates RN from server
     request.
@@ -47,7 +45,6 @@ def validate_server_rn(rn):
     return True
 
 
-# validate name
 def validate_server_name(name):
     '''Validates patient name from
     server request. Makes sure it
@@ -73,7 +70,6 @@ def validate_server_name(name):
     return True
 
 
-# validate pressure
 def validate_server_pressure(pres):
     '''Validates CPAP pressure from server request.
     Checks that the pressure is an integer, and
@@ -91,7 +87,6 @@ def validate_server_pressure(pres):
     return True
 
 
-# validate cpap data
 def validate_server_cpap_data(br, apnea):
     '''Validates breathing rate and
     apnea count from server request.
@@ -196,7 +191,7 @@ def upload_processing(data):
             update_patient_name(mrn, name)
         if pressure is not None:
             change_pressure(room_number, pressure)
-        if image_str in data:
+        if image_str is not None:
             update_cpap_data(
                 mrn,
                 data["apnea_count"],
@@ -211,6 +206,9 @@ def upload_processing(data):
 @app.route("/api/patient", methods=["POST"])
 def upload_patient():
     data = request.get_json()
+    validate = validate_uploaded_data(data)
+    if validate is not True:
+        return jsonify({"error": validate}), 400
     message, status = upload_processing(data)
     return jsonify(message), status
 
@@ -242,8 +240,7 @@ def get_patient_data_from_room(room):
                        "apnea": patient['apnea_count'],
                        "times": [
                             format_time(entry["time"])
-                            for entry in patient["cpap_data"]
-                                ]
+                            for entry in sorted_data]
                        }
     return jsonify(display_patient), 200
 
@@ -279,12 +276,38 @@ def new_pressure():
     data = request.get_json()
     room = data.get("room")
     p = data.get("pressure")
+    if not room:
+        return "room is required", 400
+    rn_valid = validate_server_rn(room)
+    if rn_valid is not True:
+        return rn_valid, 400
     valid = validate_server_pressure(p)
-    if valid is True:
-        change_pressure(room, p)
-        return "pressure added", 200
-    else:
-        return "invalid", 400
+    if valid is not True:
+        return valid, 400
+    change_pressure(room, p)
+    return "pressure added", 200
+
+
+@app.route("/pressure", methods=["GET"])
+def get_pressure():
+    '''Gets the current CPAP pressure for a specific
+    room. Needed for patient-side client query to
+    update pressure commanded by monitoring station.
+    Args:
+        room(str): room number
+    Returns:
+        JSON with pressure and 200, or an error
+    '''
+    room = request.args.get("room")
+    if not room:
+        return "room is required", 400
+    patient = get_patient(room)
+    if patient is None:
+        return "room not found", 404
+    pressure = patient.get("pressure")
+    if pressure is None:
+        return "no pressure commanded", 404
+    return jsonify({"pressure": pressure}), 200
 
 
 def encode_image(image_file):

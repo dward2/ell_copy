@@ -362,29 +362,29 @@ def test_get_cpap_no_timestamp(client):
 
 def test_new_pressure_success(client):
     reset_db()
-    create_patient_cpap(123, 'A101', 5, 2, 18, '', 't1', 'Nika')
+    create_patient_cpap(123, '101', 5, 2, 18, '', 't1', 'Nika')
     response = client.post("/pressure", json={
-        "room": "A101",
+        "room": "101",
         "pressure": 10
     })
     assert response.status_code == 200
     assert response.data.decode() == "pressure added"
     # verify DB update
-    patient = get_patient('A101')
+    patient = get_patient('101')
     assert patient["pressure"] == 10
 
 
 def test_new_pressure_invalid(client):
     reset_db()
-    create_patient_cpap(123, 'A101', 5, 2, 18, '', 't1', 'Nika')
+    create_patient_cpap(123, '101', 5, 2, 18, '', 't1', 'Nika')
 
     response = client.post("/pressure", json={
-        "room": "A101",
+        "room": "101",
         "pressure": 100
     })
 
     assert response.status_code == 400
-    assert response.data.decode() == "invalid"
+    assert response.data.decode() == "CPAP pressure must be between 4 and 25"
 
 
 def test_format_time_standard():
@@ -395,3 +395,77 @@ def test_format_time_standard():
 def test_format_time_zero_padding():
     dt = datetime(2026, 1, 5, 4, 3, 2)
     assert format_time(dt) == "01/05/26 04:03:02"
+
+
+# validation for post route
+def test_upload_patient_missing_mrn(client):
+    r = client.post("/api/patient", json={"room_number": "101"})
+    assert r.status_code == 400
+
+
+def test_upload_patient_invalid_pres(client):
+    r = client.post("/api/patient", json={
+        "mrn": 400, "room_number": "101", "cpap_pressure": 99,
+        "breathing_rate": 18, "apnea_count": 2
+    })
+    assert r.status_code == 400
+
+
+def test_upload_patient_invalid_name(client):
+    r = client.post("/api/patient", json={
+        "mrn": 321, "room_number": "101", "name": "Nika123"
+    })
+    assert r.status_code == 400
+
+
+def test_upload_processing_saves_image_in_cpap(client):
+    from server import encode_image
+    from server import upload_processing
+    with open("test_image.jpg", "rb") as image_file:
+        b64str = encode_image(image_file)
+    create_patient_cpap(123, "101", 10, 2, 18,
+                        None, datetime.now(), "Nika")
+    upload_processing({
+        "mrn": 123, "room_number": "101",
+        "cpap_pressure": 10, "breathing_rate": 18,
+        "apnea_count": 2, "image": b64str
+    })
+    patient = collection.find_one({"mrn": 123})
+    assert len(patient["cpap_data"]) == 2
+    assert patient["cpap_data"][-1]["image"] == b64str
+
+
+def test_times_sorted(client):
+    t1 = datetime(2025, 1, 1, 8, 0, 0)
+    t2 = datetime(2025, 1, 1, 9, 0, 0)
+    create_patient_cpap(123, "101", 10, 2, 18, '', t2, "Nika")
+    collection.update_one({"mrn": 123}, {"$push": {"cpap_data": {
+        "time": t1, "breathing_rate": 15,
+        "apnea_count": 1, "image": ""
+    }}})
+    response = client.get("/patient/101")
+    data = response.get_json()
+    assert data["times"] == [
+        format_time(t1),
+        format_time(t2)
+    ]
+
+
+def test_new_pressure_missing_room(client):
+    r = client.post("/pressure", json={"pressure": 10})
+    assert r.status_code == 400
+
+
+def test_get_pressure_room_not_found(client):
+    reset_db()
+    response = client.get("/pressure?room=999")
+    assert response.status_code == 404
+    assert response.data.decode() == "room not found"
+
+
+def test_get_pressure_no_pressure_commanded(client):
+    reset_db()
+    create_patient(123, "101", name="Nika")
+    response = client.get("/pressure?room=101")
+    assert response.status_code == 404
+    assert response.data.decode() == "no pressure commanded"
