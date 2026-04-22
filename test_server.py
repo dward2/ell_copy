@@ -9,6 +9,7 @@ from server import validate_server_pressure
 from server import validate_server_cpap_data
 from server import validate_uploaded_data
 from server import get_rooms, get_patient_data_from_room
+from datetime import datetime
 
 
 @pytest.fixture(autouse=True)
@@ -193,6 +194,51 @@ def test_upload_processing_w_name():
     patient = collection.find_one({"mrn": 123})
     assert patient is not None
     assert patient["room_number"] == "302"
+    assert patient["name"] == "Nika"
+
+
+def test_upload_processing_update_name():
+    from server import upload_processing
+    create_patient(123, "302", name="Ella")
+    data = {"mrn": 123, "room_number": "302", "name": "Nika"}
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 123})
+    assert patient["name"] == "Nika"
+
+
+def test_upload_processing_no_name_update_when_absent():
+    from server import upload_processing
+    create_patient(77, "310", name="Nika")
+    upload_processing({"mrn": 77, "room_number": "310"})
+    patient = collection.find_one({"mrn": 77})
+    assert patient["name"] == "Nika"
+
+
+def test_upload_processing_update_pressure():
+    from server import upload_processing
+    create_patient_cpap(50, "305", 10, 2, 15, None, datetime.now(),
+                        name="Nika")
+    upload_processing({"mrn": 50, "room_number": "305", "cpap_pressure": 18})
+    patient = get_patient("305")
+    assert patient["pressure"] == 18
+
+
+def test_upload_processing_no_duplicate_patient_created():
+    from server import upload_processing
+    create_patient(88, "320", name="Ella")
+    upload_processing({"mrn": 88, "room_number": "320", "name": "Nika"})
+    count = collection.count_documents({"mrn": 88})
+    assert count == 1
+
+
+def test_upload_processing_update_wo_name():
+    from server import upload_processing
+    create_patient(123, "101", name="Nika")
+    data = {"mrn": 123, "room_number": "101"}
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 123})
     assert patient["name"] == "Nika"
 
 
