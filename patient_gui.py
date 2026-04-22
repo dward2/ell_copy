@@ -336,13 +336,19 @@ def main_window():
 
         name = name_value.get().strip()
         if name:
+            result = validate_name(name)
+            if result is not True:
+                status_value.set(result)
+                return
             data["name"] = name
-
         pres = cpap_pressure.get().strip()
-        if pres and apnea_value.get() and br_value.get():
-            data["cpap_pressure"] = int(pres)
-            data["breathing_rate"] = int(br_value.get())
-            data["apnea_count"] = int(apnea_value.get())
+        result = validate_pressure(pres)
+        if result is not True:
+            status_value.set(result)
+            return
+        data["cpap_pressure"] = int(pres)
+        data["breathing_rate"] = int(br_value.get())
+        data["apnea_count"] = int(apnea_value.get())
         if image_str.get():
             data["image"] = image_str.get()
 
@@ -356,19 +362,22 @@ def main_window():
             status_value.set("Upload Failed.")
 
     def data_query():
+        '''Sends query every 30 seconds to
+        check for updated CPAP pressure.
+        Updates GUI if monitoring station has sent a
+        new pressure command since the last query.
+        '''
         rn = rn_value.get().strip()
         if rn:
-            r = requests.get(server + "/patient/" + rn)
+            r = requests.get(server + f"/pressure?room={rn}")
             if r.status_code == 200:
-                data = r.json()
-                new_pressure = data.get("pressure")
-                if (new_pressure is not None and
-                        str(new_pressure) != cpap_pressure.get()):
-                    cpap_pressure.set(str(new_pressure))
-
-        root.after(30000, data_query)
+                new_pressure = str(r.json().get("pressure", ""))
+                if new_pressure and new_pressure != last_server_pressure.get():
+                    last_server_pressure.set(new_pressure)
+                    cpap_pressure.set(new_pressure)
 
     root = tk.Tk()
+    last_server_pressure = tk.StringVar()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
     name_value = tk.StringVar()
@@ -456,6 +465,7 @@ def main_window():
     mrn_value.trace_add("write", check_reset)
     rn_value.trace_add("write", check_reset)
     cpap_pressure.trace_add("write", check_reset)
+    root.after(30000, data_query)
     root.mainloop()
 
 
