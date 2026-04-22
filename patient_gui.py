@@ -355,7 +355,6 @@ def main_window():
         else:
             status_value.set("Upload Failed.")
 
-
     def data_query():
         rn = rn_value.get().strip()
         if rn:
@@ -363,7 +362,8 @@ def main_window():
             if r.status_code == 200:
                 data = r.json()
                 new_pressure = data.get("pressure")
-                if str(new_pressure) != cpap_pressure:
+                if (new_pressure is not None and
+                        str(new_pressure) != cpap_pressure.get()):
                     cpap_pressure.set(str(new_pressure))
 
         root.after(30000, data_query)
@@ -455,7 +455,7 @@ def main_window():
     name_value.trace_add("write", check_reset)
     mrn_value.trace_add("write", check_reset)
     rn_value.trace_add("write", check_reset)
-    cpap_value.trace_add("write", check_reset)
+    cpap_pressure.trace_add("write", check_reset)
     root.mainloop()
 
 
