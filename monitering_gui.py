@@ -165,6 +165,8 @@ def monitering_gui():
         room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
+        if current_patient.get('times') is None:
+            current_patient['times'] = []
 
         p_data.set(
             f"{current_patient.get('name') or '-'}\n"
@@ -179,7 +181,6 @@ def monitering_gui():
             a_data.set('-')
 
         color = get_apnea_color(a_data.get())
-        print(a_data.get())
         apnea_data.config(fg=color)
 
         time_recent()
