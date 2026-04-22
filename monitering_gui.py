@@ -10,11 +10,11 @@ server = 'http://127.0.0.1:5000'
 
 def get_apnea_color(a):
     try:
-        if a > 2:
+        if int(a) > 2:
             return 'red'
         else:
             return 'black'
-    except TypeError:
+    except (ValueError, TypeError):
         return 'black'
 
 
@@ -32,22 +32,23 @@ def monitering_gui():
     current_img2 = None
 
     def set_option_menu(menu_widget, variable, options):
-        current = variable.get()  # remember current selection
+        current = variable.get()
 
         menu = menu_widget["menu"]
         menu.delete(0, "end")
 
-        for opt in options:
+        # always include placeholder
+        all_options = ["-"] + list(options)
+
+        for opt in all_options:
             menu.add_command(
                 label=str(opt),
                 command=lambda value=opt: variable.set(value)
             )
 
-        # restore selection if still valid
-        if current in options:
+        # preserve selection logic
+        if current in all_options:
             variable.set(current)
-        elif options:
-            variable.set(options[0])  # fallback
         else:
             variable.set("-")
 
@@ -55,7 +56,7 @@ def monitering_gui():
         # append data to patient
         p = new_pressure.get()
         r = requests.post(server + f"/pressure",
-                          json={"room": chosen_room.get(), "pressure": p})
+                          json={"room": chosen_room.get(), "pressure": int(p)})
         if r.status_code == 200:
             new_pressure.set("")
             pressure_warning.config(text='')
@@ -69,24 +70,24 @@ def monitering_gui():
             set_option_menu(room_select, chosen_room, new_rooms)
 
     def time_recent():
-        latest = current_patient["times"][-1]
-        if latest is None:
-            image2_time.set("-")
-        else:
+        global current_patient
+        try:
+            latest = current_patient["times"][-1]
             image2_time.set(latest)
+        except IndexError:
+            image2_time.set("-")
 
     def display_patient():
         global current_patient
         room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
-        print(current_patient.get("times", []))
 
         p_data.set(
-            f"{current_patient.get('name')}\n"
-            f"id: {current_patient.get('mrn')}\n"
-            f"Latest Pressure: {current_patient.get('pressure')}\n"
-            f"Breathing Rate: {current_patient.get('br')}"
+            f"{current_patient.get('name') or '-'}\n"
+            f"id: {current_patient.get('mrn') or '-'}\n"
+            f"Latest Pressure: {current_patient.get('pressure') or '-'}\n"
+            f"Breathing Rate: {current_patient.get('br') or '-'}"
         )
         apnea_val = current_patient.get("apnea")
         if apnea_val is not None:
@@ -94,11 +95,14 @@ def monitering_gui():
         else:
             a_data.set('-')
 
-        apnea_data.config(fg=get_apnea_color(a_data.get()))
+        color = get_apnea_color(a_data.get())
+        print(a_data.get())
+        apnea_data.config(fg=color)
 
         time_recent()
 
     def change_times():
+        global current_patient
         new_times = current_patient.get("times", [])
         set_option_menu(time_select, chosen_time, new_times)
 
@@ -138,7 +142,7 @@ def monitering_gui():
     def display_image2():
         global current_img2
         # call when new room is selected
-        if chosen_room.get() == "-":
+        if image2_time.get() == "-":
             clear_image2()
         else:
             # find new image file for patient + room
@@ -162,6 +166,8 @@ def monitering_gui():
         if chosen_room.get() == "-":
             clear_image1()
             clear_image2()
+            a_data.set('-')
+            p_data.set("Select a room to see a patient's information")
             return
         display_patient()
         change_times()
@@ -192,11 +198,13 @@ def monitering_gui():
             current_img2.save(file_path)
 
     def update_data():
+        global current_patient
         update_rooms()
         if chosen_room.get() != "-":
             display_patient()
             change_times()
-        root.after(30000, update_data)
+
+        root.after(10000, update_data)
 
     initial_root = tk.Tk()
     initial_root.geometry('470x490')

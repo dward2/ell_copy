@@ -3,7 +3,7 @@ from monitering_gui import get_apnea_color
 
 
 def test_returns_red():
-    assert get_apnea_color(3) == 'red'
+    assert get_apnea_color('3') == 'red'
 
 
 def test_returns_black():

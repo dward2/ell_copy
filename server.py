@@ -4,7 +4,7 @@ import base64
 from pymongo import MongoClient
 from mongo import collection, create_patient, update_patient_name
 from mongo import create_patient_cpap, update_cpap_data
-from mongo import get_room_list, get_patient, reset_db, change_pressure
+from mongo import get_room_list, get_patient, change_pressure
 from datetime import datetime
 
 app = Flask(__name__)
@@ -230,16 +230,16 @@ def get_patient_data_from_room(room):
         return "no patient in room", 400
     # sort datetimes
     sorted_data = sorted(
-        patient["cpap_data"],
-        key=lambda x: x["time"]
+        patient.get("cpap_data"),
+        key=lambda x: x.get("time")
     )
-    display_patient = {"name": patient["name"],
-                       "mrn": patient['mrn'],
-                       "pressure": patient['pressure'],
-                       "br": patient['breathing_rate'],
-                       "apnea": patient['apnea_count'],
+    display_patient = {"name": patient.get("name"),
+                       "mrn": patient.get("mrn"),
+                       "pressure": patient.get("pressure"),
+                       "br": patient.get("breathing_rate"),
+                       "apnea": patient.get("apnea_count"),
                        "times": [
-                            format_time(entry["time"])
+                            format_time(entry.get("time"))
                             for entry in sorted_data]
                        }
     return jsonify(display_patient), 200
@@ -260,7 +260,7 @@ def get_cpap_from_time():
     # retrieve from db
     patient = get_patient(room)
     for entry in patient["cpap_data"]:
-        if entry["time"] == time:
+        if format_time(entry["time"]) == time:
             image_str = entry["image"]
             break
     else:
