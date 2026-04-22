@@ -15,7 +15,6 @@ def server_status():
     return "server is running"
 
 
-# validate mrn
 def validate_server_mrn(mrn):
     '''Validates MRN from server
     request.
@@ -30,7 +29,6 @@ def validate_server_mrn(mrn):
     return True
 
 
-# validate rn
 def validate_server_rn(rn):
     '''Validates RN from server
     request.
@@ -47,7 +45,6 @@ def validate_server_rn(rn):
     return True
 
 
-# validate name
 def validate_server_name(name):
     '''Validates patient name from
     server request. Makes sure it
@@ -73,7 +70,6 @@ def validate_server_name(name):
     return True
 
 
-# validate pressure
 def validate_server_pressure(pres):
     '''Validates CPAP pressure from server request.
     Checks that the pressure is an integer, and
@@ -91,7 +87,6 @@ def validate_server_pressure(pres):
     return True
 
 
-# validate cpap data
 def validate_server_cpap_data(br, apnea):
     '''Validates breathing rate and
     apnea count from server request.
@@ -211,6 +206,9 @@ def upload_processing(data):
 @app.route("/api/patient", methods=["POST"])
 def upload_patient():
     data = request.get_json()
+    validate = validate_uploaded_data(data)
+    if validate is not True:
+        return jsonify({"error": validate}), 400
     message, status = upload_processing(data)
     return jsonify(message), status
 
