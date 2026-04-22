@@ -8,6 +8,16 @@ import os
 server = 'http://127.0.0.1:5000'
 
 
+def get_apnea_color(a):
+    try:
+        if a > 2:
+            return 'red'
+        else:
+            return 'black'
+    except TypeError:
+        return 'black'
+
+
 def monitering_gui():
 
     current_patient = {
@@ -21,6 +31,26 @@ def monitering_gui():
     current_img1 = None
     current_img2 = None
 
+    def set_option_menu(menu_widget, variable, options):
+        current = variable.get()  # remember current selection
+
+        menu = menu_widget["menu"]
+        menu.delete(0, "end")
+
+        for opt in options:
+            menu.add_command(
+                label=str(opt),
+                command=lambda value=opt: variable.set(value)
+            )
+
+        # restore selection if still valid
+        if current in options:
+            variable.set(current)
+        elif options:
+            variable.set(options[0])  # fallback
+        else:
+            variable.set("-")
+
     def append_new_pressure():
         # append data to patient
         p = new_pressure.get()
@@ -33,81 +63,53 @@ def monitering_gui():
             pressure_warning.config(text='Enter integer between 4 and 25')
 
     def update_rooms():
-        menu = room_select["menu"]
-        r = requests.get(server+"/rooms")
+        r = requests.get(server + "/rooms")
         if r.status_code == 200:
             new_rooms = r.json()
-        for room in new_rooms:
-            # only add NEW rooms to the option menu
-            if room not in rooms:
-                rooms.append(room)
-                menu.add_command(
-                    label=str(room),
-                    command=tk._setit(chosen_room, str(room))
-                )
-
-    def add_times():
-        menu = time_select["menu"]
-        new_times = current_patient["times"]
-        for time in new_times:
-            # only add NEW times to the option menu
-            if time not in times:
-                times.append(time)
-                menu.add_command(
-                    label=str(time),
-                    command=tk._setit(chosen_time, str(time))
-                )
+            set_option_menu(room_select, chosen_room, new_rooms)
 
     def time_recent():
-        global current_patient
-        recent_time = current_patient["times"][-1]
-        image2_time.set(recent_time)
+        latest = current_patient["times"][-1]
+        if latest is None:
+            image2_time.set("-")
+        else:
+            image2_time.set(latest)
 
     def display_patient():
         global current_patient
-        try:
-            room_selected = int(chosen_room.get())
-        except TypeError:
-            return
+        room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
         print(current_patient.get("times", []))
 
         p_data.set(
-            f"{current_patient['name']}\n"
-            f"id: {current_patient['mrn']}\n"
-            f"Latest Pressure: {current_patient['pressure']}\n"
-            f"Breathing Rate: {current_patient['br']}"
+            f"{current_patient.get('name')}\n"
+            f"id: {current_patient.get('mrn')}\n"
+            f"Latest Pressure: {current_patient.get('pressure')}\n"
+            f"Breathing Rate: {current_patient.get('br')}"
         )
-        a_data.set(int(current_patient["apnea"]))
-
-        if a_data.get() > 2:
-            apnea_data.config(fg="red")
+        apnea_val = current_patient.get("apnea")
+        if apnea_val is not None:
+            a_data.set(apnea_val)
         else:
-            apnea_data.config(fg="black")
+            a_data.set('-')
+
+        apnea_data.config(fg=get_apnea_color(a_data.get()))
 
         time_recent()
 
     def change_times():
-        global current_patient
-        # reset menu and add room's patient's times
-        chosen_time.set('-')
-        menu = time_select["menu"]
-        # delete all times
-        menu.delete(0, "end")
-        times.clear()
         new_times = current_patient.get("times", [])
-        for t in new_times:
-            menu.add_command(
-                label=t,
-                command=tk._setit(chosen_time, t)
-            )
+        set_option_menu(time_select, chosen_time, new_times)
 
     def clear_image1():
+        global current_img1
         cpap_image1.config(image="", text="Choose a Time")
         cpap_image1.image = None
+        current_img1 = None
 
     def display_image1():
+        global current_img1
         # call when new time is selected
         if chosen_time.get() == "-":
             clear_image1()
@@ -124,13 +126,17 @@ def monitering_gui():
                 img_tk = ImageTk.PhotoImage(img_resized)
                 cpap_image1.config(image=img_tk, text="")
                 cpap_image1.image = img_tk
+                current_img1 = pil_img
                 os.remove(filename)
 
     def clear_image2():
+        global current_img2
         cpap_image2.config(image="", text="No recent CPAP")
         cpap_image2.image = None
+        current_img2 = None
 
     def display_image2():
+        global current_img2
         # call when new room is selected
         if chosen_room.get() == "-":
             clear_image2()
@@ -147,11 +153,16 @@ def monitering_gui():
                 img_tk = ImageTk.PhotoImage(img_resized)
                 cpap_image2.config(image=img_tk, text="")
                 cpap_image2.image = img_tk
+                current_img2 = pil_img
                 os.remove(filename)
             else:
                 clear_image2()
 
     def room_changed(*args):
+        if chosen_room.get() == "-":
+            clear_image1()
+            clear_image2()
+            return
         display_patient()
         change_times()
         display_image2()
@@ -162,6 +173,8 @@ def monitering_gui():
 
     def save_file1():
         global current_img1
+        if current_img1 is None:
+            return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
         )
@@ -170,6 +183,8 @@ def monitering_gui():
 
     def save_file2():
         global current_img2
+        if current_img2 is None:
+            return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
         )
@@ -177,13 +192,10 @@ def monitering_gui():
             current_img2.save(file_path)
 
     def update_data():
-        global current_img1
-        global current_img2
-
         update_rooms()
         if chosen_room.get() != "-":
             display_patient()
-            add_times()
+            change_times()
         root.after(30000, update_data)
 
     initial_root = tk.Tk()
@@ -198,8 +210,7 @@ def monitering_gui():
 
     chosen_room = tk.StringVar(value="-")
     chosen_room.trace_add("write", room_changed)
-    rooms = ['000']
-    room_select = tk.OptionMenu(root, chosen_room, *rooms)
+    room_select = tk.OptionMenu(root, chosen_room, '-')
     room_select.config(width=10)
     room_select.grid(row=1, column=0, sticky='w')
 
@@ -217,15 +228,14 @@ def monitering_gui():
     root.rowconfigure(4, pad=20)
     chosen_time = tk.StringVar(value="-")
     chosen_time.trace_add("write", time_changed)
-    times = ['mm/dd/yy hh:mm', '12/31/99 08:17', '03/05/09 14:45']
-    time_select = tk.OptionMenu(root, chosen_time, *times)
+    time_select = tk.OptionMenu(root, chosen_time, '-')
     time_select.config(width=10)
     time_select.grid(row=3, column=0, sticky='w')
 
     apnea_label = tk.Label(root, text="Apnea: ")
     apnea_label.grid(row=3, column=2, sticky='w')
 
-    a_data = tk.IntVar(value='-')
+    a_data = tk.StringVar(value='-')
     apnea_color = tk.StringVar()
     apnea_color.set("black")
     apnea_data = tk.Label(root, textvariable=a_data, fg=apnea_color.get())

@@ -8,7 +8,7 @@ from server import validate_server_name
 from server import validate_server_pressure
 from server import validate_server_cpap_data
 from server import validate_uploaded_data
-from server import get_rooms, get_patient_data_from_room
+from server import get_rooms, get_patient_data_from_room, format_time
 from datetime import datetime
 
 
@@ -305,7 +305,8 @@ def test_get_rooms_route(client):
 
 def test_get_patient_data_from_room_success(client):
     reset_db()
-    create_patient_cpap(123, '101', 10, 2, 18, '', 4, 'Nika')
+    datetime_me = datetime.now()
+    create_patient_cpap(123, '101', 10, 2, 18, '', datetime_me, 'Nika')
 
     # call route
     response = client.get("/patient/101")
@@ -320,7 +321,7 @@ def test_get_patient_data_from_room_success(client):
         "pressure": 10,
         "br": 18,
         "apnea": 2,
-        "times": [4]
+        "times": [datetime_me.strftime("%m/%d/%y %H:%M:%S")]
     }
 
 
@@ -384,3 +385,13 @@ def test_new_pressure_invalid(client):
 
     assert response.status_code == 400
     assert response.data.decode() == "invalid"
+
+
+def test_format_time_standard():
+    dt = datetime(2025, 1, 5, 14, 30, 45)
+    assert format_time(dt) == "01/05/25 14:30:45"
+
+
+def test_format_time_zero_padding():
+    dt = datetime(2026, 1, 5, 4, 3, 2)
+    assert format_time(dt) == "01/05/26 04:03:02"
