@@ -63,6 +63,33 @@ After first upload, the user can update patient name and CPAP pressure without c
 
 ## Monitoring Side User Manual
 
+1. Run the monitering_gui.py file.
+
+*Patient Information*
+
+2. Select a room from the **room dropdown**. The patient panel will populate wiht patient information (name, medical record number, latest CPAP pressure, apnea events and breathing rate). If the apnea events are 2 or higher, it is displayed in red as a clinical alert.
+
+3. The most recent CPAP image appears on the right. To view historical readings, select a timestamp from the **time dropdown**.The past CPAP image will appear on the left.
+
+4. To save past or recent image, click **Save image** button below the display. A file dialog will open to choose the save location and file name.
+
+*Sending a Pressure Command*
+
+5. Make sure correct room is selected.
+
+6. Enter a new pressure value in the new pressure field.
+
+7. Click **Submit**. On success, the field will clear.
+
+*Switching Rooms*
+
+8. Upon selecting a different room from the dropdown the all data will automatically update.
+
+*Automatic-updating*
+
+10. The interface polls the server every 10 seconds. Room lists and patient data for the currently selected room update automatically. If new CPAP data has been uploaded by the patient-side GUI, it will display without any action needed from the monitoring side. 
+
+
 ## API Reference Guide
 Base URL:
 
