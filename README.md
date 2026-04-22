@@ -19,52 +19,114 @@ The server is a Flask-based RESTful API deployed to a cloud virtual machine, bac
 1. Make sure server is running.
 2. Open terminal and run patient_gui.py
 
+![alt text](pictures/pgui_1.png)
+
 *Entering Patient Information*
 
 1. You will have the ability to input name, medical record number, room number and CPAP pressure.
 
 2. Enter at least medical record number and room number.
 
+![alt text](pictures/pgui_2.png)
+![alt text](pictures/pgui_3.png)
+
 3. Optionally, enter patient name and CPAP pressure.
+
+![alt text](pictures/pgui_4.png)
 
 *CPAP Data Analysis*
 
-4. Click **Select CPAP File** to open a file browser and select a .txt CPAP file of interest. The GUI will calculate and display the breathing rate and apnea event count. If the apnea events are abnormal, the number will display in **red**.
+4. Click **Select CPAP File** to open a file browser and select a .txt CPAP file of interest. The GUI will calculate and display the breathing rate and apnea event count. If the apnea events are abnormal, the number will display in **red**. A flow vs. time plot image will display in the GUI.
 
-5. A flow vs. time plot image will display in the GUI.
+![alt text](pictures/pgui_5.png)
+![alt text](pictures/pgui_6.png)
 
 *Uploading to Database*
 
 After filling out required fields and optionally entering CPAP data the user has the option to upload the information to the server.
 
-6.  Click **Upload** to send data to the server. The CPAP flow vs. time image will be appended with a timestamp/
+5.  Click **Upload** to send data to the server. The CPAP flow vs. time image will be appended with a timestamp/
+
+![alt text](pictures/pgui_7.png)
 
 *Updating Patient Data*
 
 After first upload, the user can update patient name and CPAP pressure without changing the medical record number and room number.
 
-7. Edit the patient name and upload. The server will replace the existing name.
+8. Edit the patient name and upload. The server will replace the existing name.
 
-8. Edit the CPAP pressure value. The pressure will be replaced in the server.
+![alt text](pictures/pgui_8.png)
 
-9. Choose a different CPAP data file. The apnea and breathing rate will be replaced. The flow vs. time image will be appended with a timestamp.
+9. Edit the CPAP pressure value. The pressure will be replaced in the server.
+
+![alt text](pictures/pgui_9.png)
+
+10. Choose a different CPAP data file. The apnea and breathing rate will be replaced. The flow vs. time image will be appended with a timestamp upon upload.
+![alt text](pictures/pgui_10.png)
+![alt text](pictures/pgui_11.png)
+![alt text](pictures/pgui_12.png)
 
 *Automatic Pressure Updates*
 
-10. The client polls the server every 30 seconds. If monitoring station has commanded a new CPAP pressure for client's specific room, the pressure field and data in server update automatically.
+11. The client polls the server every 30 seconds. If monitoring station has commanded a new CPAP pressure for client's specific room, the pressure field and data in server update automatically.
+
+![alt text](pictures/pgui_14.png)
+![alt text](pictures/pgui_15.png)
 
 *Resetting the Device*
 
-11. Click **Reset** to clear all data in the GUI. The GUI is then ready to be used for a new patient.
+12. Click **Reset** to clear all data in the GUI. The GUI is then ready to be used for a new patient.
+
+![alt text](pictures/pgui_13.png)
 
 *Status Bar*
 
-12. Refer to the status bar for feedback, missing required fields and instructions.
+13. Refer to the status bar for feedback, missing required fields and instructions.
+
 
 ## Monitoring Side User Manual
 
+1. Run the monitering_gui.py file.
+
+*Patient Information*
+![alt text](pictures/qgui_1.png)
+
+2. Select a room from the **room dropdown**. The patient panel will populate wiht patient information (name, medical record number, latest CPAP pressure, apnea events and breathing rate). If the apnea events are 2 or higher, it is displayed in red as a clinical alert.
+
+![alt text](pictures/qgui_2.png)
+
+![alt text](pictures/qgui_3.png)
+
+3. The most recent CPAP image appears on the right. To view historical readings, select a timestamp from the **time dropdown**.The past CPAP image will appear on the left.
+![alt text](pictures/qgui_4.png)
+
+4. To save past or recent image, click **Save image** button below the display. A file dialog will open to choose the save location and file name.
+
+![alt text](pictures/qgui_5.png)
+
+*Sending a Pressure Command*
+
+5. Make sure correct room is selected.
+
+6. Enter a new pressure value in the new pressure field.
+
+![alt text](pictures/pgui_14.png)
+
+7. Click **Submit**. On success, the field will clear.
+
+![alt text](pictures/pgui_15.png)
+
+*Switching Rooms*
+
+8. Upon selecting a different room from the dropdown the all data will automatically update.
+
+*Automatic-updating*
+
+10. The interface polls the server every 10 seconds. Room lists and patient data for the currently selected room update automatically. If new CPAP data has been uploaded by the patient-side GUI, it will display without any action needed from the monitoring side.
+
+
 ## API Reference Guide
-Base URL:
+Server URL: 'http://127.0.0.1:5000'
 
 #### GET /
 Check that server is running.
@@ -154,6 +216,11 @@ Get the current commanded CPAP pressure for a room. Intended for the patient-sid
 - 400 — "room is required"
 - 404 — "room not found" or "no pressure commanded"
 
+Acknowledgement: Used AI to creare API guide https://claude.ai/share/85318bb6-ed11-4db1-80ba-2fb280382396
+
+## Video Demo
+
+Access Link: https://youtu.be/JTl_IXCTha0
 
 ## Licensing
 
