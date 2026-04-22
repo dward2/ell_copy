@@ -342,24 +342,27 @@ def main_window():
                 return
             data["name"] = name
         pres = cpap_pressure.get().strip()
-        result = validate_pressure(pres)
-        if result is not True:
-            status_value.set(result)
-            return
-        data["cpap_pressure"] = int(pres)
-        data["breathing_rate"] = int(br_value.get())
-        data["apnea_count"] = int(apnea_value.get())
-        if image_str.get():
-            data["image"] = image_str.get()
+        if pres:
+            result = validate_pressure(pres)
+            if result is not True:
+                status_value.set(result)
+                return
+            data["cpap_pressure"] = int(pres)
+            data["breathing_rate"] = int(br_value.get())
+            data["apnea_count"] = int(apnea_value.get())
+            if image_str.get():
+                data["image"] = image_str.get()
 
-        print("Sending data:", data)
+        print("Sending data:", {k: v if k != "image" else "<image_str>"
+                        for k, v in data.items()})
         r = requests.post(server + "/api/patient", json=data)
         if r.status_code == 200:
             mrn_entry.config(state=tk.DISABLED)
             rn_entry.config(state=tk.DISABLED)
             status_value.set("Successful Upload.")
         else:
-            status_value.set("Upload Failed.")
+            # status_value.set("Upload Failed.")
+            status_value.set(f"Upload Failed: {r.status_code} - {r.text}")
 
     def data_query():
         '''Sends query every 30 seconds to
@@ -375,6 +378,8 @@ def main_window():
                 if new_pressure and new_pressure != last_server_pressure.get():
                     last_server_pressure.set(new_pressure)
                     cpap_pressure.set(new_pressure)
+
+        root.after(30000, data_query)
 
     root = tk.Tk()
     last_server_pressure = tk.StringVar()
