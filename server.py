@@ -268,19 +268,26 @@ def get_patient_data_from_room(room):
     patient = get_patient(room)
     if patient is None:
         return "no patient in room", 400
-    # sort datetimes
-    sorted_data = sorted(
-        patient.get("cpap_data"),
-        key=lambda x: x.get("time")
-    )
+
+    cpap_data = patient.get("cpap_data")
+
+    if cpap_data:
+        sorted_data = sorted(
+            cpap_data,
+            key=lambda x: x.get("time")
+        )
+        times = [
+            format_time(entry.get("time"))
+            for entry in sorted_data
+        ]
+    else:
+        times = None
     display_patient = {"name": patient.get("name"),
                        "mrn": patient.get("mrn"),
                        "pressure": patient.get("pressure"),
                        "br": patient.get("breathing_rate"),
                        "apnea": patient.get("apnea_count"),
-                       "times": [
-                            format_time(entry.get("time"))
-                            for entry in sorted_data]
+                       "times": times
                        }
     return jsonify(display_patient), 200
 
@@ -375,8 +382,6 @@ def get_pressure():
     if patient is None:
         return "room not found", 404
     pressure = patient.get("pressure")
-    if pressure is None:
-        return "no pressure commanded", 404
     return jsonify({"pressure": pressure}), 200
 
 
