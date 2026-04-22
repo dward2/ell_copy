@@ -395,3 +395,24 @@ def test_format_time_standard():
 def test_format_time_zero_padding():
     dt = datetime(2026, 1, 5, 4, 3, 2)
     assert format_time(dt) == "01/05/26 04:03:02"
+
+
+# validation for post route
+def test_upload_patient_missing_mrn(client):
+    r = client.post("/api/patient", json={"room_number": "101"})
+    assert r.status_code == 400
+
+
+def test_upload_patient_invalid_pres(client):
+    r = client.post("/api/patient", json={
+        "mrn": 400, "room_number": "101", "cpap_pressure": 99,
+        "breathing_rate": 18, "apnea_count": 2
+    })
+    assert r.status_code == 400
+
+
+def test_upload_patient_invalid_name(client):
+    r = client.post("/api/patient", json={
+        "mrn": 321, "room_number": "101", "name": "Nika123"
+    })
+    assert r.status_code == 400
