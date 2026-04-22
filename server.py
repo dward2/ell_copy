@@ -191,7 +191,7 @@ def upload_processing(data):
             update_patient_name(mrn, name)
         if pressure is not None:
             change_pressure(room_number, pressure)
-        if image_str in data:
+        if image_str is not None:
             update_cpap_data(
                 mrn,
                 data["apnea_count"],
