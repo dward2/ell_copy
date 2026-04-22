@@ -137,18 +137,37 @@ def apnea_color(ap):
     Args:
         ap (int): The number of apnea events.
     Returns:
-        str: 'red' if count >= 2, 'white' otherwise.
+        str: 'red' if count >= 2, black' otherwise.
     '''
     if ap >= 2:
         return "red"
     else:
-        return "white"
+        return "black"
 
 
 def encode_image(image_file):
     image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
+
+
+def clear_fields():
+    '''Clears all fields.
+    Returns a dictionary of empty values.
+    Returns:
+        dict: empty values for each field.
+    '''
+    return {
+        "name": "",
+        "mrn": "",
+        "rn": "",
+        "cpap": "",
+        "br": "",
+        "apnea": "",
+        "image": "",
+        "apnea_color": "black",
+        "status": "Enter Patient Information Above"
+    }
 
 
 def main_window():
@@ -276,14 +295,14 @@ def main_window():
         Clears all entries, results, and plot.
         Reactivates MRN and room number entries.
         '''
-        name_value.set("")
-        mrn_value.set("")
-        rn_value.set("")
-        cpap_value.set("")
-        br_value.set("")
-        apnea_value.set("")
-        image_str.set("")
-        apnea_display.config(fg="black")
+        cleared = clear_fields()
+        name_value.set(cleared["name"])
+        mrn_value.set(cleared["mrn"])
+        rn_value.set(cleared["rn"])
+        cpap_value.set(cleared["cpap"])
+        br_value.set(cleared["br"])
+        apnea_value.set(cleared["apnea"])
+        image_str.set(cleared["image"])
 
         for widget in plot_frame.winfo_children():
             widget.destroy()

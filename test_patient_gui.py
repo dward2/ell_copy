@@ -7,6 +7,7 @@ from patient_gui import validate_pressure
 from patient_gui import only_digits
 from patient_gui import check_required_fields
 from patient_gui import apnea_color
+from patient_gui import clear_fields
 
 
 @pytest.mark.parametrize("name , expected", [
@@ -100,8 +101,8 @@ def test_check_required_fields(mrn, rn, expected):
 
 
 @pytest.mark.parametrize("count, expected", [
-    (0, "white"),
-    (1, "white"),
+    (0, "black"),
+    (1, "black"),
     (2, "red"),
     (3, "red"),
     (10, "red"),
@@ -115,3 +116,18 @@ def test_encode_image():
     with open("test_image.jpg", "rb") as image_file:
         b64str = encode_image(image_file)
     assert b64str[0:20] == "/9j/4AAQSkZJRgABAQEA"
+
+
+@pytest.mark.parametrize("field, expected", [
+    ("name", ""),
+    ("mrn", ""),
+    ("rn", ""),
+    ("cpap", ""),
+    ("br", ""),
+    ("apnea", ""),
+    ("image", ""),
+    ("status", "Enter Patient Information Above"),
+])
+def test_clear_fields(field, expected):
+    fields = clear_fields()
+    assert fields[field] == expected
