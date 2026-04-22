@@ -5,7 +5,7 @@ import requests
 import os
 
 # connect to server
-server = 'http://127.0.0.1:5000'
+server = "http://67.159.79.173:5000"
 
 
 def get_apnea_color(a):
