@@ -10,11 +10,11 @@ server = 'http://127.0.0.1:5000'
 
 def get_apnea_color(a):
     try:
-        if a > 2:
+        if int(a) > 2:
             return 'red'
         else:
             return 'black'
-    except TypeError:
+    except (ValueError, TypeError):
         return 'black'
 
 
@@ -95,7 +95,9 @@ def monitering_gui():
         else:
             a_data.set('-')
 
-        apnea_data.config(fg=get_apnea_color(a_data.get()))
+        color = get_apnea_color(a_data.get())
+        print(a_data.get())
+        apnea_data.config(fg=color)
 
         time_recent()
 
