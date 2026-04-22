@@ -3,15 +3,29 @@ from tkinter import ttk, filedialog
 from PIL import Image, ImageTk
 import requests
 import os
+from datetime import datetime
 
 # connect to server
 server = 'http://127.0.0.1:5000'
 
 def get_apnea_color(a):
-        if a > 2:
-            return 'red'
-        else:
+        try:
+            if a > 2:
+                return 'red'
+            else:
+                 return 'black'
+        except TypeError:
             return 'black'
+
+
+def get_latest_time(times: list[datetime]) -> datetime | None:
+    if not times:
+        return None
+    return max(times)
+
+
+def format_time(dt):
+    return dt.strftime("%m/%d/%y %H:%M:%S")
 
 
 def monitering_gui():
@@ -66,16 +80,15 @@ def monitering_gui():
 
 
     def time_recent():
-        global current_patient
-        recent_time = current_patient["times"][-1]
-        image2_time.set(recent_time)
+        latest = get_latest_time(current_patient["times"])
+        if latest is None:
+            image2_time.set("-")
+        else:
+            image2_time.set(latest)
 
     def display_patient():
         global current_patient
-        try:
-            room_selected = chosen_room.get()
-        except TypeError:
-            return
+        room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
         current_patient = r.json()
         print(current_patient.get("times", []))
@@ -101,8 +114,10 @@ def monitering_gui():
         set_option_menu(time_select, chosen_time, new_times)
 
     def clear_image1():
+        global current_img1
         cpap_image1.config(image="", text="Choose a Time")
         cpap_image1.image = None
+        current_img1 = None
 
     def display_image1():
         global current_img1
@@ -126,8 +141,10 @@ def monitering_gui():
                 os.remove(filename)
 
     def clear_image2():
+        global current_img2
         cpap_image2.config(image="", text="No recent CPAP")
         cpap_image2.image = None
+        current_img2 = None
 
     def display_image2():
         global current_img2
@@ -153,10 +170,13 @@ def monitering_gui():
                 clear_image2()
 
     def room_changed(*args):
-        if chosen_room.get() != "-":
-            display_patient()
-            change_times()
-            display_image2()
+        if chosen_room.get() == "-":
+            clear_image1()
+            clear_image2()
+            return
+        display_patient()
+        change_times()
+        display_image2()
 
     def time_changed(*args):
         image1_time.set(chosen_time.get())
@@ -164,6 +184,8 @@ def monitering_gui():
 
     def save_file1():
         global current_img1
+        if current_img1 is None:
+            return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
         )
@@ -172,6 +194,8 @@ def monitering_gui():
 
     def save_file2():
         global current_img2
+        if current_img2 is None:
+            return
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
         )
