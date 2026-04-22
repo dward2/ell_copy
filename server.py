@@ -276,12 +276,16 @@ def new_pressure():
     data = request.get_json()
     room = data.get("room")
     p = data.get("pressure")
+    if not room:
+        return "room is required", 400
+    rn_valid = validate_server_rn(room)
+    if rn_valid is not True:
+        return rn_valid, 400
     valid = validate_server_pressure(p)
-    if valid is True:
-        change_pressure(room, p)
-        return "pressure added", 200
-    else:
-        return "invalid", 400
+    if valid is not True:
+        return valid, 400
+    change_pressure(room, p)
+    return "pressure added", 200
 
 
 def encode_image(image_file):
