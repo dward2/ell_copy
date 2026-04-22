@@ -10,7 +10,7 @@ import requests
 import base64
 
 # connect to server
-server = 'http://127.0.0.1:5000'
+server = "http://67.159.79.173:5000"
 
 base_font = ("Georgia", 24)
 big_font = ("Georgia", 32, "bold")
