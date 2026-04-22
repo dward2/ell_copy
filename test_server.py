@@ -196,6 +196,16 @@ def test_upload_processing_w_name():
     assert patient["name"] == "Nika"
 
 
+def test_upload_processing_update_name():
+    from server import upload_processing
+    create_patient(123, "302", name="Ella")
+    data = {"mrn": 123, "room_number": "302", "name": "Nika"}
+    message, status = upload_processing(data)
+    assert status == 200
+    patient = collection.find_one({"mrn": 123})
+    assert patient["name"] == "Nika"
+
+
 def test_upload_processing_cpap():
     from server import upload_processing
     data = {
