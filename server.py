@@ -176,12 +176,13 @@ def upload_processing(data):
     time = datetime.now()
     image_str = data.get("image")
     patient = collection.find_one({"mrn": mrn})
-
+    pressure = data.get("cpap_pressure")
     if patient is None:
         if "cpap_pressure" in data:
             create_patient_cpap(
-                mrn, room_number,
-                data["cpap_pressure"],
+                mrn,
+                room_number,
+                pressure,
                 data["apnea_count"],
                 data["breathing_rate"],
                 image_str,
@@ -193,10 +194,11 @@ def upload_processing(data):
     else:
         if name is not None:
             update_patient_name(mrn, name)
-        if "cpap_pressure" in data:
+        if pressure is not None:
+            change_pressure(room_number, pressure)
+        if image_str in data:
             update_cpap_data(
                 mrn,
-                data["cpap_pressure"],
                 data["apnea_count"],
                 data["breathing_rate"],
                 data["image"],

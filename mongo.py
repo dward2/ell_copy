@@ -49,14 +49,13 @@ def update_patient_name(mrn, name):
         )
 
 
-def update_cpap_data(mrn, pres, apnea, br, cpap_image, time):
+def update_cpap_data(mrn, apnea, br, cpap_image, time):
     # change the pressure, br, and apnea to new data.
     # append new cpap image with timestamp
     collection.update_one(
         {"mrn": mrn},
         {
             "$set": {
-                "pressure": pres,
                 "apnea_count": apnea,
                 "breathing_rate": br
             },

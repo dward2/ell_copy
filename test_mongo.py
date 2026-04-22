@@ -104,10 +104,9 @@ def test_patient_name_nonexist():
 
 def test_update_cpap_data():
     create_patient(302, "101")
-    update_cpap_data(302, 10, 3, 21, "image1",
+    update_cpap_data(302, 3, 21, "image1",
                      "2026-04-21 14:00:00")
     patient = collection.find_one({"mrn": 302})
-    assert patient["pressure"] == 10
     assert patient["apnea_count"] == 3
     assert patient["breathing_rate"] == 21
     assert len(patient["cpap_data"]) == 1
@@ -122,9 +121,9 @@ def test_update_cpap_data_appends_history():
     t2 = datetime(2026, 4, 21, 15, 0)
     t3 = datetime(2026, 4, 21, 16, 0)
 
-    update_cpap_data(302, 10, 3, 21, "image1", t1)
-    update_cpap_data(302, 15, 0, 18, "image2", t2)
-    update_cpap_data(302, 20, 1, 16, "image3", t3)
+    update_cpap_data(302, 3, 21, "image1", t1)
+    update_cpap_data(302, 0, 18, "image2", t2)
+    update_cpap_data(302, 1, 16, "image3", t3)
 
     patient = collection.find_one({"mrn": 302})
 
