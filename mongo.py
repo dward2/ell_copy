@@ -9,8 +9,9 @@ collection = db["patient"]
 
 
 def create_patient(mrn, rn, name=None):
-    '''Creates a new patient record in the
+    '''Create a new patient record in the
     database with only the required fields.
+
     Args:
         mrn(int): medical record number
         rn(str): room number
@@ -24,7 +25,19 @@ def create_patient(mrn, rn, name=None):
 
 
 def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
+    '''Create a new patient record with pressure and
+    cpap file data.
 
+     Args:
+        mrn (int): medical record number.
+        rn (str): room number.
+        pres (int): CPAP pressure.
+        apnea (int): number of apnea events.
+        br (int): breathing rate in bpm.
+        cpap_image (str): base64 encoded cpap plot.
+        time (str): timestamp of the CPAP data.
+        name (str) (optional): patient name.
+    '''
     new_patient = {
         "name": name,
         "mrn": mrn,
@@ -41,6 +54,13 @@ def create_patient_cpap(mrn, rn, pres, apnea, br, cpap_image, time, name=None):
 
 
 def update_patient_name(mrn, name):
+    '''Update an existing patient's
+    name in the database.
+
+    Args:
+        mrn(int): medical record number
+        name(str): new patient name
+    '''
     patient = collection.find_one({"mrn": mrn})
     if patient is not None:
         collection.update_one(
@@ -50,6 +70,17 @@ def update_patient_name(mrn, name):
 
 
 def update_cpap_data(mrn, apnea, br, cpap_image, time):
+    '''Update CPAP data for existing patients.
+    Replace breathing rate and apnea count with new values.
+    Append new image and timestamp into a list.
+
+    Args:
+        mrn (int): medical record number.
+        apnea (int): number of apnea events.
+        br (int): breathing rate in bpm.
+        cpap_image (str): base64 encoded CPAP plot.
+        time (str): timestamp of the CPAP data.
+    '''
     # change the pressure, br, and apnea to new data.
     # append new cpap image with timestamp
     collection.update_one(
@@ -71,20 +102,45 @@ def update_cpap_data(mrn, apnea, br, cpap_image, time):
 
 
 def get_room_list():
+    '''Get a list of all unique room numbers
+    from database.
+
+    Returns:
+        list: all uploaded room numbers
+    '''
     all_rooms = collection.distinct("room_number")
     print(all_rooms)
     return all_rooms
 
 
 def get_patient(room):
+    '''Get patient data for specific room.
+
+    Args:
+        room(str): room number
+
+    Returns:
+        dict: patient data, or None if no patient found
+    '''
     return collection.find_one({"room_number": room})
 
 
 def change_pressure(room, p):
+    '''Update the commanded CPAP pressure
+    for a specific room.
+
+    Args:
+        room(str): room number.
+        p (int): new CPAP pressure
+
+    '''
     patient = collection.find_one({"room_number": room})
     if patient is not None:
         collection.update_one({"room_number": room}, {"$set": {"pressure": p}})
 
 
 def reset_db():
+    '''Delete all documents from
+    patient collection. Used in testing.
+    '''
     collection.delete_many({})
