@@ -13,7 +13,8 @@ def get_apnea_color(a):
     Determine the display color for an apnea value.
 
     Args:
-        a: A value representing apnea severity. Expected to be convertible to int.
+        a: A value representing apnea severity.
+        Expected to be convertible to int.
 
     Returns:
         str: 'red' if the integer value of `a` is greater than 2,
