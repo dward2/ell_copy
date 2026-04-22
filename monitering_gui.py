@@ -70,6 +70,7 @@ def monitering_gui():
             set_option_menu(room_select, chosen_room, new_rooms)
 
     def time_recent():
+        global current_patient
         try:
             latest = current_patient["times"][-1]
             image2_time.set(latest)
@@ -139,7 +140,7 @@ def monitering_gui():
     def display_image2():
         global current_img2
         # call when new room is selected
-        if chosen_room.get() == "-":
+        if image2_time.get() == "-":
             clear_image2()
         else:
             # find new image file for patient + room

@@ -260,7 +260,7 @@ def get_cpap_from_time():
     # retrieve from db
     patient = get_patient(room)
     for entry in patient["cpap_data"]:
-        if entry["time"] == time:
+        if format_time(entry["time"]) == time:
             image_str = entry["image"]
             break
     else:
