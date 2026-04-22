@@ -56,7 +56,7 @@ def monitering_gui():
         # append data to patient
         p = new_pressure.get()
         r = requests.post(server + f"/pressure",
-                          json={"room": chosen_room.get(), "pressure": p})
+                          json={"room": chosen_room.get(), "pressure": int(p)})
         if r.status_code == 200:
             new_pressure.set("")
             pressure_warning.config(text='')
