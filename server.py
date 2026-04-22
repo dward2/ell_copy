@@ -219,18 +219,27 @@ def get_rooms():
     return jsonify(rooms), 200
 
 
+def format_time(dt):
+    return dt.strftime("%m/%d/%y %H:%M:%S")
+
+
 @app.route("/patient/<room>", methods=["GET"])
 def get_patient_data_from_room(room):
     patient = get_patient(room)
     if patient is None:
         return "no patient in room", 400
+    # sort datetimes
+    sorted_data = sorted(
+        patient["cpap_data"],
+        key=lambda x: x["time"]
+    )
     display_patient = {"name": patient["name"],
                        "mrn": patient['mrn'],
                        "pressure": patient['pressure'],
                        "br": patient['breathing_rate'],
                        "apnea": patient['apnea_count'],
                        "times": [
-                            entry["time"]
+                            format_time(entry["time"])
                             for entry in patient["cpap_data"]
                                 ]
                        }

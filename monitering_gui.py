@@ -18,16 +18,6 @@ def get_apnea_color(a):
             return 'black'
 
 
-def get_latest_time(times: list[datetime]) -> datetime | None:
-    if not times:
-        return None
-    return max(times)
-
-
-def format_time(dt):
-    return dt.strftime("%m/%d/%y %H:%M:%S")
-
-
 def monitering_gui():
 
     current_patient = {
@@ -80,7 +70,7 @@ def monitering_gui():
 
 
     def time_recent():
-        latest = get_latest_time(current_patient["times"])
+        latest = current_patient["times"][-1]
         if latest is None:
             image2_time.set("-")
         else:
