@@ -416,3 +416,21 @@ def test_upload_patient_invalid_name(client):
         "mrn": 321, "room_number": "101", "name": "Nika123"
     })
     assert r.status_code == 400
+
+
+def test_upload_processing_saves_image_in_cpap(client):
+    from server import encode_image
+    from server import upload_processing
+    reset_db()
+    with open("test_image.jpg", "rb") as image_file:
+        b64str = encode_image(image_file)
+    create_patient_cpap(123, "101", 10, 2, 18,
+                        None, datetime.now(), "Nika")
+    upload_processing({
+        "mrn": 123, "room_number": "101",
+        "cpap_pressure": 10, "breathing_rate": 18,
+        "apnea_count": 2, "image": b64str
+    })
+    patient = collection.find_one({"mrn": 123})
+    assert len(patient["cpap_data"]) == 2
+    assert patient["cpap_data"][-1]["image"] == b64str
