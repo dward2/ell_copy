@@ -7,6 +7,12 @@ import os
 # connect to server
 server = 'http://127.0.0.1:5000'
 
+def get_apnea_color(a):
+        if a > 2:
+            return 'red'
+        else:
+            return 'black'
+
 
 def monitering_gui():
 
@@ -81,10 +87,7 @@ def monitering_gui():
         )
         a_data.set(int(current_patient["apnea"]))
 
-        if a_data.get() > 2:
-            apnea_data.config(fg="red")
-        else:
-            apnea_data.config(fg="black")
+        apnea_label.config(fg=get_apnea_color(a_data.get()))
 
         time_recent()
 
