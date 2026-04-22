@@ -18,10 +18,12 @@ small_font = ("Georgia", 16)
 
 
 def validate_name(name):
-    '''Validates that a patient name contains letters, spaces,
+    '''Validate that a patient name contains letters, spaces,
     or hyphens only.
+
     Args:
         name (str): The patient name to validate.
+
     Returns:
         True if the name is valid, or an error message string
         if the name is empty or contains invalid characters.
@@ -43,9 +45,11 @@ def validate_name(name):
 
 
 def validate_mrn(mrn):
-    '''Validates that a medical record number contains only digits.
+    '''Validate that a medical record number contains only digits.
+
     Args:
         mrn (str): The medical record number to validate.
+
     Returns:
         True if the MRN is valid, or an error message string
         if the MRN is empty or contains non-digit characters.
@@ -59,9 +63,11 @@ def validate_mrn(mrn):
 
 
 def validate_rn(rn):
-    '''Validates that a room number contains only digits.
+    '''Validate that a room number contains only digits.
+
     Args:
         rn (str): The room number to validate.
+
     Returns:
         True if the room number is valid, or an error message
         string if the room number is empty or contains
@@ -76,10 +82,12 @@ def validate_rn(rn):
 
 
 def validate_pressure(pres):
-    '''Validates that a CPAP pressure is an integer between 4 and 25.
+    '''Validate that a CPAP pressure is an integer between 4 and 25.
     An empty entry is considered valid since CPAP pressure is optional.
+
     Args:
         pres (str): The CPAP pressure value to validate.
+
     Returns:
     True if the pressure is valid or empty, or an error
     message string if the value is not an integer or is
@@ -97,10 +105,12 @@ def validate_pressure(pres):
 
 
 def only_digits(value):
-    """Validates that the entry contains only digits.
-    Allows empty string for when the user deletes all text.
+    """Validate that the entry contains only digits.
+    Allow empty string for when the user deletes all text.
+
     Args:
         value (str): The proposed value of the entry field.
+
     Returns:
         bool: True if value is empty or all digits, False otherwise.
     """
@@ -110,12 +120,14 @@ def only_digits(value):
 
 
 def check_required_fields(mrn, rn):
-    """Checks if required fields are filled
+    """Check if required fields are filled
     to clear patient for CPAP file selection,
-    returns a list of missing field names.
+    return a list of missing field names.
+
     Args:
         mrn (str): The medical record number value.
         rn (str): The room number value.
+
     Returns:
         list: List of missing field names, empty if all
         required fields are filled.
@@ -131,11 +143,13 @@ def check_required_fields(mrn, rn):
 
 
 def apnea_color(ap):
-    '''Deterimines the display color for apnea count.
+    '''Deterimine the display color for apnea count.
     Red if apnea count is 2 or greater.
-    White/default otherwise.
+    black otherwise.
+
     Args:
         ap (int): The number of apnea events.
+
     Returns:
         str: 'red' if count >= 2, black' otherwise.
     '''
@@ -146,14 +160,24 @@ def apnea_color(ap):
 
 
 def encode_image(image_file):
+    '''Encode an image file into
+    base64 string.
+
+    Args:
+        image_file: file object
+
+    Returns:
+        str: base64 encoded string of the image.
+    '''
     image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
     return img_str
 
 
 def clear_fields():
-    '''Clears all fields.
-    Returns a dictionary of empty values.
+    '''Clear all fields.
+    Return a dictionary of empty values.
+
     Returns:
         dict: empty values for each field.
     '''
@@ -173,8 +197,9 @@ def clear_fields():
 def main_window():
 
     def name_enter():
-        '''Validates the patient name entry and update the status
+        '''Validate the patient name entry and update the status
         bar with an error message if validation fails.
+
         Returns:
             bool: True if the name is valid, False otherwise
         '''
@@ -184,8 +209,9 @@ def main_window():
         return True
 
     def mrn_enter():
-        '''Validates the MRN entry and updates the status bar
+        '''Validate the MRN entry and updates the status bar
         with an error message if validation fails.
+
         Returns:
             bool: True if the MRN is valid, False otherwise.
         '''
@@ -195,8 +221,9 @@ def main_window():
         return True
 
     def rn_enter():
-        '''Validates the room number entry and updates the status
+        '''Validate the room number entry and updates the status
         bar with an error message if validation fails.
+
         Returns:
             bool: True if the room number is valid, False otherwise.
         '''
@@ -206,8 +233,9 @@ def main_window():
         return True
 
     def pressure_enter():
-        '''Validates the CPAP pressure entry and updates the status
+        '''Validate the CPAP pressure entry and updates the status
         bar with an error message if validation fails.
+
         Returns:
             bool: True if the pressure is valid, False otherwise.
         '''
@@ -217,9 +245,10 @@ def main_window():
         return True
 
     def check_entry(*args):
-        '''Enables or disables the CPAP file selection button.
-        Updates the status bar with missing field names
+        '''Enable or disable the CPAP file selection button.
+        Update the status bar with missing field names
         or a ready message.
+
         Args:
         *args: Unused arguments passed by trace_add callback.
         '''
@@ -235,6 +264,7 @@ def main_window():
 
     def check_reset(*args):
         '''Enable reset button if any field has data entered.
+
         Args:
             *args: Unused arguments passed by trace_add callback.
         '''
@@ -245,7 +275,7 @@ def main_window():
             button_reset.config(state=tk.DISABLED)
 
     def select_cpap_file():
-        '''Opens file dialog to select and analyze a CPAP data file.
+        '''Open a file dialog to select and analyze a CPAP data file.
         Displays breathing rate and apnea count in the GUI.
         Apnea count is displayed in red if >= 2.
         '''
@@ -266,6 +296,7 @@ def main_window():
     def cpap_plot(time_data, flow_data):
         """Create and display a flow vs time plot in the GUI.
         Upload plot to server.
+
         Args:
             time_data (list): time values in seconds.
             flow_data (list): flow rate values.
@@ -291,7 +322,7 @@ def main_window():
         plt.close(fig)
 
     def reset_device():
-        '''Resets all fields and displays to their default state.
+        '''Reset all fields and displays to their default state.
         Clears all entries, results, and plot.
         Reactivates MRN and room number entries.
         '''
@@ -317,7 +348,7 @@ def main_window():
         status_value.set("Enter Patient Information Above")
 
     def upload():
-        '''Uploads patient data to the server,
+        '''Upload patient data to the server,
         Locks MRN and room number after upload.
         Requires MRN and room number and can
         optionally upload CPAP and name data.
@@ -353,8 +384,6 @@ def main_window():
             if image_str.get():
                 data["image"] = image_str.get()
 
-        print("Sending data:", {k: v if k != "image" else "<image_str>"
-                        for k, v in data.items()})
         r = requests.post(server + "/api/patient", json=data)
         if r.status_code == 200:
             mrn_entry.config(state=tk.DISABLED)
@@ -365,10 +394,13 @@ def main_window():
             status_value.set(f"Upload Failed: {r.status_code} - {r.text}")
 
     def data_query():
-        '''Sends query every 30 seconds to
+        '''Send query every 30 seconds to
         check for updated CPAP pressure.
         Updates GUI if monitoring station has sent a
         new pressure command since the last query.
+
+        Args:
+            rn(str): room number
         '''
         rn = rn_value.get().strip()
         if rn:
