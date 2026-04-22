@@ -84,10 +84,10 @@ def monitering_gui():
         current_patient = r.json()
 
         p_data.set(
-            f"{current_patient.get('name')}\n"
-            f"id: {current_patient.get('mrn')}\n"
-            f"Latest Pressure: {current_patient.get('pressure')}\n"
-            f"Breathing Rate: {current_patient.get('br')}"
+            f"{current_patient.get('name') or '-'}\n"
+            f"id: {current_patient.get('mrn') or '-'}\n"
+            f"Latest Pressure: {current_patient.get('pressure') or '-'}\n"
+            f"Breathing Rate: {current_patient.get('br') or '-'}"
         )
         apnea_val = current_patient.get("apnea")
         if apnea_val is not None:

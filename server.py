@@ -230,16 +230,16 @@ def get_patient_data_from_room(room):
         return "no patient in room", 400
     # sort datetimes
     sorted_data = sorted(
-        patient["cpap_data"],
-        key=lambda x: x["time"]
+        patient.get("cpap_data"),
+        key=lambda x: x.get("time")
     )
-    display_patient = {"name": patient["name"],
-                       "mrn": patient['mrn'],
-                       "pressure": patient['pressure'],
-                       "br": patient['breathing_rate'],
-                       "apnea": patient['apnea_count'],
+    display_patient = {"name": patient.get("name"),
+                       "mrn": patient.get("mrn"),
+                       "pressure": patient.get("pressure"),
+                       "br": patient.get("breathing_rate"),
+                       "apnea": patient.get("apnea_count"),
                        "times": [
-                            format_time(entry["time"])
+                            format_time(entry.get("time"))
                             for entry in sorted_data]
                        }
     return jsonify(display_patient), 200
