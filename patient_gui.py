@@ -364,7 +364,29 @@ def main_window():
         else:
             status_value.set("Upload Failed.")
 
+
+    def data_query():
+        '''Send query every 30 seconds to
+        check for updated CPAP pressure.
+        Updates GUI if monitoring station has sent a
+        new pressure command since the last query.
+
+        Args:
+            rn(str): room number
+        '''
+        rn = rn_value.get().strip()
+        if rn:
+            r = requests.get(server + f"/pressure?room={rn}")
+            if r.status_code == 200:
+                new_pressure = str(r.json().get("pressure", ""))
+                if new_pressure and new_pressure != last_server_pressure.get():
+                    last_server_pressure.set(new_pressure)
+                    cpap_value.set(new_pressure)
+
+        root.after(30000, data_query)
+
     root = tk.Tk()
+    last_server_pressure = tk.StringVar()
     root.title("Sleep Lab Monitoring System")
     root.resizable(False, False)
     name_value = tk.StringVar()
@@ -452,6 +474,7 @@ def main_window():
     mrn_value.trace_add("write", check_reset)
     rn_value.trace_add("write", check_reset)
     cpap_value.trace_add("write", check_reset)
+    data_query()
     root.mainloop()
 
 
