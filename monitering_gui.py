@@ -9,6 +9,16 @@ server = 'http://127.0.0.1:5000'
 
 
 def get_apnea_color(a):
+    """
+    Determine the display color for an apnea value.
+
+    Args:
+        a: A value representing apnea severity. Expected to be convertible to int.
+
+    Returns:
+        str: 'red' if the integer value of `a` is greater than 2,
+             otherwise 'black'. Returns 'black' if conversion fails.
+    """
     try:
         if int(a) > 2:
             return 'red'
@@ -19,6 +29,29 @@ def get_apnea_color(a):
 
 
 def monitering_gui():
+    """
+    Launch and manage the patient monitoring GUI.
+
+    This function initializes a Tkinter-based interface for:
+    - Selecting hospital rooms
+    - Viewing patient information (name, MRN, pressure, breathing rate)
+    - Displaying apnea values with color indication
+    - Viewing and saving CPAP images
+    - Submitting new pressure readings
+    - Periodically refreshing patient and room data from a server
+
+    The GUI communicates with a backend server via HTTP requests
+    to retrieve and update patient data.
+
+    Internal state is maintained for:
+    - Current patient data
+    - Selected room and time
+    - Loaded CPAP images
+
+    Note:
+        This function defines multiple nested helper functions to handle
+        UI updates, API communication, and event callbacks.
+    """
 
     current_patient = {
         "name": "",
@@ -32,6 +65,22 @@ def monitering_gui():
     current_img2 = None
 
     def set_option_menu(menu_widget, variable, options):
+        """
+        Update a Tkinter OptionMenu with new selectable options.
+
+        Args:
+            menu_widget: The OptionMenu widget to update.
+            variable: The associated Tkinter variable controlling selection.
+            options (iterable): New options to populate the menu.
+
+        Behavior:
+            - Clears existing menu entries
+            - Adds a default placeholder option "-"
+            - Populates menu with provided options
+            - Preserves the current selection if still valid,
+              otherwise resets to "-"
+        """
+
         current = variable.get()
 
         menu = menu_widget["menu"]
@@ -53,6 +102,17 @@ def monitering_gui():
             variable.set("-")
 
     def append_new_pressure():
+        """
+        Send a new pressure reading to the server.
+
+        Reads the value from the input field, sends it via POST request,
+        and updates the UI based on success or failure.
+
+        Behavior:
+            - On success: clears input and removes warning message
+            - On failure: displays validation error message
+        """
+
         # append data to patient
         p = new_pressure.get()
         r = requests.post(server + f"/pressure",
@@ -64,12 +124,26 @@ def monitering_gui():
             pressure_warning.config(text='Enter integer between 4 and 25')
 
     def update_rooms():
+        """
+        Fetch and update the list of available rooms from the server.
+
+        On success:
+            - Updates the room selection dropdown menu
+        """
+
         r = requests.get(server + "/rooms")
         if r.status_code == 200:
             new_rooms = r.json()
             set_option_menu(room_select, chosen_room, new_rooms)
 
     def time_recent():
+        """
+        Update the most recent CPAP image timestamp.
+
+        Sets the latest time from the current patient's time list
+        to the secondary image display. Defaults to "-" if no data exists.
+        """
+
         global current_patient
         try:
             latest = current_patient["times"][-1]
@@ -78,6 +152,14 @@ def monitering_gui():
             image2_time.set("-")
 
     def display_patient():
+        """
+        Retrieve and display patient data for the selected room.
+
+        Fetches patient information from the server and updates:
+            - Patient details (name, MRN, pressure, breathing rate)
+            - Apnea value and its display color
+            - Most recent CPAP image time
+        """
         global current_patient
         room_selected = chosen_room.get()
         r = requests.get(server + f"/patient/{room_selected}")
@@ -102,17 +184,35 @@ def monitering_gui():
         time_recent()
 
     def change_times():
+        """
+        Update the time selection menu based on the current patient.
+
+        Populates the dropdown with available CPAP timestamps.
+        """
         global current_patient
         new_times = current_patient.get("times", [])
         set_option_menu(time_select, chosen_time, new_times)
 
     def clear_image1():
+        """
+        Clear the primary CPAP image display.
+
+        Resets the image widget and internal image reference.
+        """
         global current_img1
         cpap_image1.config(image="", text="Choose a Time")
         cpap_image1.image = None
         current_img1 = None
 
     def display_image1():
+        """
+        Display a CPAP image for the selected time.
+
+        Fetches the image from the server based on selected room and time,
+        resizes it, and updates the GUI.
+
+        If no valid time is selected, clears the image display.
+        """
         global current_img1
         # call when new time is selected
         if chosen_time.get() == "-":
@@ -134,12 +234,23 @@ def monitering_gui():
                 os.remove(filename)
 
     def clear_image2():
+        """
+        Clear the secondary (most recent) CPAP image display.
+
+        Resets the image widget and internal image reference.
+        """
         global current_img2
         cpap_image2.config(image="", text="No recent CPAP")
         cpap_image2.image = None
         current_img2 = None
 
     def display_image2():
+        """
+        Display the most recent CPAP image for the selected room.
+
+        Fetches the latest image from the server and updates the GUI.
+        Clears the display if no image is available.
+        """
         global current_img2
         # call when new room is selected
         if image2_time.get() == "-":
@@ -163,6 +274,17 @@ def monitering_gui():
                 clear_image2()
 
     def room_changed(*args):
+        """
+        Handle changes to the selected room.
+
+        Behavior:
+            - If no room selected ("-"): resets UI elements
+            - Otherwise:
+                - Loads patient data
+                - Updates available times
+                - Displays the most recent CPAP image
+        """
+
         if chosen_room.get() == "-":
             clear_image1()
             clear_image2()
@@ -174,10 +296,21 @@ def monitering_gui():
         display_image2()
 
     def time_changed(*args):
+        """
+        Handle changes to the selected time.
+
+        Updates the displayed timestamp and loads the corresponding CPAP image.
+        """
         image1_time.set(chosen_time.get())
         display_image1()
 
     def save_file1():
+        """
+        Save the currently displayed primary CPAP image to a file.
+
+        Opens a file dialog for the user to choose a save location.
+        Does nothing if no image is loaded.
+        """
         global current_img1
         if current_img1 is None:
             return
@@ -188,6 +321,12 @@ def monitering_gui():
             current_img1.save(file_path)
 
     def save_file2():
+        """
+        Save the currently displayed secondary CPAP image to a file.
+
+        Opens a file dialog for the user to choose a save location.
+        Does nothing if no image is loaded.
+        """
         global current_img2
         if current_img2 is None:
             return
@@ -198,6 +337,14 @@ def monitering_gui():
             current_img2.save(file_path)
 
     def update_data():
+        """
+        Periodically refresh room and patient data.
+
+        Behavior:
+            - Updates room list
+            - Refreshes patient data if a room is selected
+            - Reschedules itself to run every 10 seconds
+        """
         global current_patient
         update_rooms()
         if chosen_room.get() != "-":
@@ -253,6 +400,15 @@ def monitering_gui():
     pressure_label.grid(row=4, column=0, sticky='e')
 
     def validate_int(P):
+        """
+        Blocks any input to the pressure entry that is non-numeric
+
+        Args:
+            P (str): Proposed new value of the input field.
+
+        Returns:
+            bool: True if input is digits or empty, False otherwise.
+        """
         return P.isdigit() or P == ""
     vcmd = (root.register(validate_int), "%P")
 
