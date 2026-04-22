@@ -240,8 +240,7 @@ def get_patient_data_from_room(room):
                        "apnea": patient['apnea_count'],
                        "times": [
                             format_time(entry["time"])
-                            for entry in patient["cpap_data"]
-                                ]
+                            for entry in sorted_data]
                        }
     return jsonify(display_patient), 200
 
