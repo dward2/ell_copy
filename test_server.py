@@ -454,3 +454,18 @@ def test_times_sorted(client):
 def test_new_pressure_missing_room(client):
     r = client.post("/pressure", json={"pressure": 10})
     assert r.status_code == 400
+
+
+def test_get_pressure_room_not_found(client):
+    reset_db()
+    response = client.get("/pressure?room=999")
+    assert response.status_code == 404
+    assert response.data.decode() == "room not found"
+
+
+def test_get_pressure_no_pressure_commanded(client):
+    reset_db()
+    create_patient(123, "101", name="Nika")
+    response = client.get("/pressure?room=101")
+    assert response.status_code == 404
+    assert response.data.decode() == "no pressure commanded"

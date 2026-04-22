@@ -288,6 +288,28 @@ def new_pressure():
     return "pressure added", 200
 
 
+@app.route("/pressure", methods=["GET"])
+def get_pressure():
+    '''Gets the current CPAP pressure for a specific
+    room. Needed for patient-side client query to
+    update pressure commanded by monitoring station.
+    Args:
+        room(str): room number
+    Returns:
+        JSON with pressure and 200, or an error
+    '''
+    room = request.args.get("room")
+    if not room:
+        return "room is required", 400
+    patient = get_patient(room)
+    if patient is None:
+        return "room not found", 404
+    pressure = patient.get("pressure")
+    if pressure is None:
+        return "no pressure commanded", 404
+    return jsonify({"pressure": pressure}), 200
+
+
 def encode_image(image_file):
     image_bytes = image_file.read()
     img_str = base64.b64encode(image_bytes).decode("utf-8")
